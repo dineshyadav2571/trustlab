@@ -25,6 +25,39 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/research-areas"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Research Areas</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            CRUD endpoint and admin UI for image, title, and description.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/peoples"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Peoples</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            CRUD for person profiles with two image URLs and research details.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/publications"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Publications</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Category enum, text details, and optional external link.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/workspace"
           className="rounded-xl border p-5 transition hover:bg-slate-50"
         >

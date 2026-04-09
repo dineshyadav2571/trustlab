@@ -12,6 +12,9 @@ type SidebarNavProps = {
 const links = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/admins", label: "Admin Management" },
+  { href: "/admin/research-areas", label: "Research Areas" },
+  { href: "/admin/peoples", label: "Peoples" },
+  { href: "/admin/publications", label: "Publications" },
   { href: "/admin/workspace", label: "Workspace" },
 ];
 
