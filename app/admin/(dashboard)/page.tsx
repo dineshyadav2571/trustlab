@@ -80,6 +80,26 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/news-highlights"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">News &amp; highlights</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Image-only gallery entries stored in MongoDB.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/opportunities"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Opportunities</h3>
+          <p className="mt-1 text-sm text-slate-600">Text-only opportunity entries.</p>
+        </Link>
+
+        <Link
           href="/admin/research-projects"
           className="rounded-xl border p-5 transition hover:bg-slate-50"
         >
