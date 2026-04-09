@@ -19,6 +19,7 @@ const links = [
   { href: "/admin/achievements", label: "Achievements" },
   { href: "/admin/news-highlights", label: "News & highlights" },
   { href: "/admin/opportunities", label: "Opportunities" },
+  { href: "/admin/collaborations", label: "Collaborations" },
   { href: "/admin/research-projects", label: "Research Projects" },
   { href: "/admin/workspace", label: "Workspace" },
 ];
