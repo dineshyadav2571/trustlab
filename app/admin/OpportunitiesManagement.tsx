@@ -101,7 +101,10 @@ export function OpportunitiesManagement() {
         <h3 className="text-lg font-semibold">
           {editingId ? "Edit opportunity" : "Add opportunity"}
         </h3>
-        <p className="mt-1 text-sm text-slate-600">Text only.</p>
+        <p className="mt-1 text-sm text-slate-600">
+          Text only. On the public site, wrap phrases in <code className="rounded bg-slate-100 px-1">**double asterisks**</code>{" "}
+          for bold.
+        </p>
 
         <form onSubmit={submit} className="mt-4 grid gap-3">
           <textarea

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  --btrust-teal: #0d9488;
+}
+
 body {
-  background: #f8fafc;
+  background: #ffffff;
   color: #0f172a;
 }
