@@ -58,6 +58,28 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/patents"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Patents</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Granted or Published category with text.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/research-projects"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Research Projects</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Image, title, college name, and bugged.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/workspace"
           className="rounded-xl border p-5 transition hover:bg-slate-50"
         >

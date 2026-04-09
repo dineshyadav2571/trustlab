@@ -15,6 +15,8 @@ const links = [
   { href: "/admin/research-areas", label: "Research Areas" },
   { href: "/admin/peoples", label: "Peoples" },
   { href: "/admin/publications", label: "Publications" },
+  { href: "/admin/patents", label: "Patents" },
+  { href: "/admin/research-projects", label: "Research Projects" },
   { href: "/admin/workspace", label: "Workspace" },
 ];
 
