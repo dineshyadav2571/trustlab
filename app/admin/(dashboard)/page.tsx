@@ -36,6 +36,17 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/content"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Content</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Text, image, PDF, or Word — assign access per user.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/research-areas"
           className="rounded-xl border p-5 transition hover:bg-slate-50"
         >
