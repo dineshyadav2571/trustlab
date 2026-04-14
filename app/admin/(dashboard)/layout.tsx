@@ -25,13 +25,15 @@ export default async function DashboardLayout({
   }
 
   return (
-    <main className="min-h-screen p-3 md:p-4">
-      <div className="grid min-h-[calc(100vh-1.5rem)] w-full grid-cols-1 gap-3 md:grid-cols-[230px_1fr]">
+    <div className="flex min-h-svh flex-col bg-slate-100/90 md:h-svh md:overflow-hidden">
+      <div className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-3 p-3 min-h-0 md:flex-row md:gap-4 md:p-4">
         <SidebarNav adminName={currentAdmin.name} adminEmail={currentAdmin.email} />
-        <section className="h-full min-w-0 rounded-2xl border bg-white p-4 shadow-sm md:p-6">
-          {children}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm md:overflow-hidden md:shadow-md">
+          <div className="admin-scroll-region min-h-0 flex-1 overflow-y-auto overscroll-y-contain p-4 md:p-6">
+            {children}
+          </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

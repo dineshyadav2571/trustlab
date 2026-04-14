@@ -8,3 +8,28 @@ body {
   background: #ffffff;
   color: #0f172a;
 }
+
+/* Admin dashboard: stable gutters + thin scrollbars without extra dependencies */
+.admin-scroll-region {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.55) transparent;
+}
+
+.admin-scroll-region::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-scroll-region::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: rgb(148 163 184 / 0.45);
+}
+
+.admin-scroll-region::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(100 116 139 / 0.55);
+}
+
+.admin-scroll-region::-webkit-scrollbar-track {
+  background: transparent;
+}
