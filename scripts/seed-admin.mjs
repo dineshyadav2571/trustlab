@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const { MONGODB_URI, SEED_ADMIN_NAME, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } =
-  process.env;
+const MONGODB_URI = "mongodb+srv://dineshyadav2571_db_user:zdExIVFq5ttJcWtG@cluster0.7lxscmw.mongodb.net/?appName=Cluster0";
+const SEED_ADMIN_NAME = "Dinesh Kumar";
+const SEED_ADMIN_EMAIL = "dineshyadav2571@gmail.com";
+const SEED_ADMIN_PASSWORD = "password";
 
 if (!MONGODB_URI) {
   throw new Error("Missing MONGODB_URI");
