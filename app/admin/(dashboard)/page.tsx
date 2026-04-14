@@ -25,6 +25,17 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/users"
+          className="rounded-xl border p-5 transition hover:bg-slate-50"
+        >
+          <p className="text-sm text-slate-500">Module</p>
+          <h3 className="text-lg font-semibold">Users</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Normal user accounts with onboarding email and password reset flows.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/research-areas"
           className="rounded-xl border p-5 transition hover:bg-slate-50"
         >
