@@ -5,17 +5,19 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 
+export type AuthRole = "admin" | "user";
+
 export type AccessTokenPayload = {
   sub: string;
   email: string;
-  role: "admin";
+  role: AuthRole;
   type: "access";
 };
 
 export type RefreshTokenPayload = {
   sub: string;
   email: string;
-  role: "admin";
+  role: AuthRole;
   type: "refresh";
   tokenId: string;
 };
@@ -117,6 +119,39 @@ export function clearAuthCookies(response: NextResponse) {
   response.cookies.set(env.adminRefreshCookieName, "", common);
 }
 
+export function setUserAuthCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+) {
+  const common = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+    path: "/",
+  };
+  response.cookies.set(env.userAccessCookieName, accessToken, {
+    ...common,
+    maxAge: getAccessTokenMaxAgeSeconds(),
+  });
+  response.cookies.set(env.userRefreshCookieName, refreshToken, {
+    ...common,
+    maxAge: getRefreshTokenMaxAgeSeconds(),
+  });
+}
+
+export function clearUserAuthCookies(response: NextResponse) {
+  const common = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+    maxAge: 0,
+    path: "/",
+  };
+  response.cookies.set(env.userAccessCookieName, "", common);
+  response.cookies.set(env.userRefreshCookieName, "", common);
+}
+
 export async function getAuthenticatedAdminFromCookies() {
   const cookieStore = await cookies();
   const token = cookieStore.get(env.adminAccessCookieName)?.value;
@@ -126,7 +161,30 @@ export async function getAuthenticatedAdminFromCookies() {
   }
 
   try {
-    return verifyAccessToken(token);
+    const payload = verifyAccessToken(token);
+    if (payload.role !== "admin") {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function getAuthenticatedUserFromCookies() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(env.userAccessCookieName)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = verifyAccessToken(token);
+    if (payload.role !== "user") {
+      return null;
+    }
+    return payload;
   } catch {
     return null;
   }

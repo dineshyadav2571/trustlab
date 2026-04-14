@@ -3,6 +3,7 @@ import { connectToDb } from "@/lib/db";
 import { hashPassword, hashToken } from "@/lib/auth";
 import { AppUser } from "@/lib/models/AppUser";
 import { UserPasswordResetToken } from "@/lib/models/UserPasswordResetToken";
+import { revokeAllUserRefreshSessions } from "@/lib/user-refresh-session";
 
 type ResetPasswordBody = {
   email?: string;
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
 
   user.passwordHash = await hashPassword(newPassword);
   await user.save();
+
+  await revokeAllUserRefreshSessions(String(user._id));
 
   resetDoc.usedAt = new Date();
   await resetDoc.save();

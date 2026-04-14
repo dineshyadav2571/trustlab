@@ -4,6 +4,8 @@ import { connectToDb } from "@/lib/db";
 import { authenticateRequest } from "@/lib/auth-guard";
 import { AppUser } from "@/lib/models/AppUser";
 import { UserPasswordResetToken } from "@/lib/models/UserPasswordResetToken";
+import { UserRefreshSession } from "@/lib/models/UserRefreshSession";
+import { revokeAllUserRefreshSessions } from "@/lib/user-refresh-session";
 
 type RouteContext = {
   params: Promise<{ userId: string }>;
@@ -47,6 +49,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       { userId: target._id, usedAt: null },
       { $set: { usedAt: new Date() } },
     );
+    await revokeAllUserRefreshSessions(String(target._id));
   }
 
   return NextResponse.json({
@@ -78,6 +81,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   }
 
   await UserPasswordResetToken.deleteMany({ userId: target._id });
+  await UserRefreshSession.deleteMany({ userId: target._id });
   await AppUser.deleteOne({ _id: target._id });
 
   return NextResponse.json({ ok: true });

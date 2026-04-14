@@ -19,6 +19,8 @@ export const env = {
   adminAccessCookieName: process.env.ADMIN_ACCESS_COOKIE_NAME ?? "admin_access",
   adminRefreshCookieName:
     process.env.ADMIN_REFRESH_COOKIE_NAME ?? "admin_refresh",
+  userAccessCookieName: process.env.USER_ACCESS_COOKIE_NAME ?? "user_access",
+  userRefreshCookieName: process.env.USER_REFRESH_COOKIE_NAME ?? "user_refresh",
   appBaseUrl: process.env.APP_BASE_URL ?? "http://localhost:3000",
   brevoApiKey: process.env.BREVO_API_KEY ?? "",
   brevoSenderEmail: process.env.BREVO_SENDER_EMAIL ?? "",

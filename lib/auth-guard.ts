@@ -21,7 +21,31 @@ export function authenticateRequest(request: NextRequest) {
   }
 
   try {
-    return verifyAccessToken(token);
+    const payload = verifyAccessToken(token);
+    if (payload.role !== "admin") {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export function authenticateUserRequest(request: NextRequest) {
+  const cookieToken = request.cookies.get(env.userAccessCookieName)?.value;
+  const bearerToken = getBearerToken(request);
+  const token = cookieToken ?? bearerToken;
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = verifyAccessToken(token);
+    if (payload.role !== "user") {
+      return null;
+    }
+    return payload;
   } catch {
     return null;
   }

@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { SiteFooter } from "@/app/components/site/SiteFooter";
 import { SiteHeader } from "@/app/components/site/SiteHeader";
+import { UserContentFab } from "@/app/components/user/UserContentFab";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -8,6 +9,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <UserContentFab />
     </div>
   );
 }
