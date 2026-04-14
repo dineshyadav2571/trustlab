@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import {
+  adminBtnDangerOutline,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminBtnSecondary,
+} from "@/app/admin/admin-styles";
 
 type CollaborationItem = {
   id: string;
@@ -19,6 +26,7 @@ export function CollaborationsManagement() {
   const [text, setText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function loadItems() {
     setLoading(true);
@@ -49,12 +57,23 @@ export function CollaborationsManagement() {
     setEditingId(null);
     setText("");
     setImageFile(null);
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setEditingId(null);
+    setText("");
+    setImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   function startEdit(item: CollaborationItem) {
     setEditingId(item.id);
     setText(item.text);
     setImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -113,61 +132,24 @@ export function CollaborationsManagement() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border p-5">
-        <h3 className="text-lg font-semibold">
-          {editingId ? "Edit collaboration" : "Add collaboration"}
-        </h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Text plus one image stored in the database.
-        </p>
-
-        <form onSubmit={submit} className="mt-4 grid gap-3">
-          <textarea
-            required
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Collaboration text"
-            rows={4}
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            required={!editingId}
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            className="rounded-md border px-3 py-2"
-          />
-          {editingId ? (
-            <p className="text-xs text-slate-500">
-              Leave image empty to keep the current image.
-            </p>
-          ) : null}
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-            >
-              {saving ? "Saving..." : editingId ? "Update" : "Create"}
-            </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-md border px-4 py-2"
-              >
-                Cancel
-              </button>
-            ) : null}
-          </div>
-        </form>
-      </section>
-
       <section className="space-y-3">
-        <h3 className="text-lg font-semibold">Collaborations</h3>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Collaborations</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Text plus one image stored in the database.
+            </p>
+          </div>
+          <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+            Add collaboration
+          </button>
+        </div>
+
+        {error && !formModalOpen ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         {loading ? <p className="text-sm text-slate-500">Loading...</p> : null}
         {!loading && !items.length ? (
           <p className="text-sm text-slate-500">No entries yet.</p>
@@ -175,7 +157,7 @@ export function CollaborationsManagement() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           {items.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-xl border">
+            <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <Image
                 src={`data:${item.imageMimeType};base64,${item.imageBase64}`}
                 alt=""
@@ -189,18 +171,14 @@ export function CollaborationsManagement() {
                 <p className="mt-2 text-xs text-slate-500">
                   Updated: {new Date(item.updatedAt).toLocaleString()}
                 </p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startEdit(item)}
-                    className="rounded-md border px-3 py-1.5 text-sm"
-                  >
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => void remove(item.id)}
-                    className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                    className={adminBtnDangerOutline}
                   >
                     Delete
                   </button>
@@ -210,6 +188,51 @@ export function CollaborationsManagement() {
           ))}
         </div>
       </section>
+
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title={editingId ? "Edit collaboration" : "Add collaboration"}
+        description={
+          editingId
+            ? "Leave image empty to keep the current image."
+            : "Image is required for a new entry."
+        }
+        size="lg"
+      >
+        <form onSubmit={submit} className="grid gap-3">
+          <textarea
+            required
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Collaboration text"
+            rows={4}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            required={!editingId}
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button type="submit" disabled={saving} className={adminBtnPrimary}>
+              {saving ? "Saving…" : editingId ? "Update" : "Create"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </div>
   );
 }

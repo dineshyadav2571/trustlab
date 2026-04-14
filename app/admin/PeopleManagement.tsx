@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import {
+  adminBtnDangerOutline,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminBtnSecondary,
+} from "@/app/admin/admin-styles";
 
 type PeopleItem = {
   id: string;
@@ -37,6 +44,7 @@ export function PeopleManagement() {
   const [form, setForm] = useState(defaultForm);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -71,6 +79,15 @@ export function PeopleManagement() {
     setEditingId(null);
     setForm(defaultForm);
     setProfileImageFile(null);
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setEditingId(null);
+    setForm(defaultForm);
+    setProfileImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   function startEdit(item: PeopleItem) {
@@ -85,6 +102,8 @@ export function PeopleManagement() {
       profileUrl2: item.profileUrl2,
     });
     setProfileImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -106,6 +125,7 @@ export function PeopleManagement() {
       }
       if (!editingId && !profileImageFile) {
         setError("Profile image is required.");
+        setSaving(false);
         return;
       }
 
@@ -148,106 +168,24 @@ export function PeopleManagement() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border p-5">
-        <h3 className="text-lg font-semibold">
-          {editingId ? "Edit People" : "Create People"}
-        </h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Add person profile with a primary image and two research profile URLs.
-        </p>
-
-        <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-2">
-          <input
-            required
-            value={form.name}
-            onChange={(e) => onFieldChange("name", e.target.value)}
-            placeholder="Name"
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            required
-            value={form.title}
-            onChange={(e) => onFieldChange("title", e.target.value)}
-            placeholder="Title"
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            required
-            value={form.department}
-            onChange={(e) => onFieldChange("department", e.target.value)}
-            placeholder="Department"
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(e) => onFieldChange("email", e.target.value)}
-            placeholder="Email"
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            required={!editingId}
-            onChange={(e) => setProfileImageFile(e.target.files?.[0] ?? null)}
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            required
-            type="url"
-            value={form.profileUrl1}
-            onChange={(e) => onFieldChange("profileUrl1", e.target.value)}
-            placeholder="Profile URL 1 (Google Scholar)"
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            required
-            type="url"
-            value={form.profileUrl2}
-            onChange={(e) => onFieldChange("profileUrl2", e.target.value)}
-            placeholder="Profile URL 2 (ResearchGate)"
-            className="rounded-md border px-3 py-2"
-          />
-          <textarea
-            required
-            value={form.researchInterests}
-            onChange={(e) => onFieldChange("researchInterests", e.target.value)}
-            placeholder="Research interests"
-            rows={4}
-            className="rounded-md border px-3 py-2 md:col-span-2"
-          />
-          {editingId ? (
-            <p className="text-xs text-slate-500 md:col-span-2">
-              Leave profile image empty to keep current image.
-            </p>
-          ) : null}
-
-          {error ? <p className="text-sm text-red-600 md:col-span-2">{error}</p> : null}
-
-          <div className="flex gap-2 md:col-span-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-            >
-              {saving ? "Saving..." : editingId ? "Update People" : "Create People"}
-            </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-md border px-4 py-2"
-              >
-                Cancel
-              </button>
-            ) : null}
-          </div>
-        </form>
-      </section>
-
       <section className="space-y-3">
-        <h3 className="text-lg font-semibold">People Records</h3>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">People records</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Profile with primary image and two research profile URLs.
+            </p>
+          </div>
+          <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+            Add person
+          </button>
+        </div>
+
+        {error && !formModalOpen ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         {loading ? <p className="text-sm text-slate-500">Loading...</p> : null}
         {!loading && !items.length ? (
           <p className="text-sm text-slate-500">No people records added yet.</p>
@@ -255,7 +193,7 @@ export function PeopleManagement() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           {items.map((item) => (
-            <article key={item.id} className="rounded-xl border p-4">
+            <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <Image
                 src={`data:${item.profileImageMimeType};base64,${item.profileImageBase64}`}
                 alt={`${item.name} profile`}
@@ -282,28 +220,24 @@ export function PeopleManagement() {
                   Profile URL 2
                 </a>
               </div>
-              <h4 className="mt-3 text-lg font-semibold">{item.name}</h4>
+              <h4 className="mt-3 text-lg font-semibold text-slate-900">{item.name}</h4>
               <p className="text-sm text-slate-700">{item.title}</p>
               <p className="text-sm text-slate-700">Department: {item.department}</p>
               <p className="text-sm text-slate-700">Email: {item.email}</p>
               <p className="mt-1 text-sm text-slate-700">
-                Research Interests: {item.researchInterests}
+                Research interests: {item.researchInterests}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 Updated: {new Date(item.updatedAt).toLocaleString()}
               </p>
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => startEdit(item)}
-                  className="rounded-md border px-3 py-1.5 text-sm"
-                >
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => void remove(item.id)}
-                  className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                  className={adminBtnDangerOutline}
                 >
                   Delete
                 </button>
@@ -312,6 +246,96 @@ export function PeopleManagement() {
           ))}
         </div>
       </section>
+
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title={editingId ? "Edit person" : "Add person"}
+        description={
+          editingId
+            ? "Leave profile image empty to keep the current image."
+            : "Profile image is required for a new record."
+        }
+        size="xl"
+      >
+        <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
+          <input
+            required
+            value={form.name}
+            onChange={(e) => onFieldChange("name", e.target.value)}
+            placeholder="Name"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            value={form.title}
+            onChange={(e) => onFieldChange("title", e.target.value)}
+            placeholder="Title"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            value={form.department}
+            onChange={(e) => onFieldChange("department", e.target.value)}
+            placeholder="Department"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="email"
+            value={form.email}
+            onChange={(e) => onFieldChange("email", e.target.value)}
+            placeholder="Email"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            required={!editingId}
+            onChange={(e) => setProfileImageFile(e.target.files?.[0] ?? null)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2"
+          />
+          <input
+            required
+            type="url"
+            value={form.profileUrl1}
+            onChange={(e) => onFieldChange("profileUrl1", e.target.value)}
+            placeholder="Profile URL 1 (Google Scholar)"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="url"
+            value={form.profileUrl2}
+            onChange={(e) => onFieldChange("profileUrl2", e.target.value)}
+            placeholder="Profile URL 2 (ResearchGate)"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <textarea
+            required
+            value={form.researchInterests}
+            onChange={(e) => onFieldChange("researchInterests", e.target.value)}
+            placeholder="Research interests"
+            rows={4}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2"
+          />
+
+          {error ? (
+            <p className="text-sm text-red-600 md:col-span-2" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 md:col-span-2">
+            <button type="submit" disabled={saving} className={adminBtnPrimary}>
+              {saving ? "Saving…" : editingId ? "Update person" : "Create person"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </div>
   );
 }

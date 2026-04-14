@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import {
+  adminBtnDangerOutline,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminBtnSecondary,
+} from "@/app/admin/admin-styles";
 
 type UserRow = {
   id: string;
@@ -20,6 +27,7 @@ export function UsersManagement() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function loadUsers() {
     setLoading(true);
@@ -45,6 +53,22 @@ export function UsersManagement() {
   useEffect(() => {
     void loadUsers();
   }, []);
+
+  function resetForm() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setError("");
+    setInfo("");
+    setFormModalOpen(true);
+  }
 
   async function createUser(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,9 +101,7 @@ export function UsersManagement() {
         setInfo("User created and onboarding email sent.");
       }
 
-      setName("");
-      setEmail("");
-      setPassword("");
+      resetForm();
       await loadUsers();
     } catch {
       setError("Could not create user.");
@@ -124,56 +146,33 @@ export function UsersManagement() {
   }
 
   return (
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">Users</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Create normal (non-admin) accounts. Onboarding and password reset use the same email flow
-        as admins, with user-specific pages at <code className="text-xs">/user/login</code>,{" "}
-        <code className="text-xs">/user/forgot-password</code>.
-      </p>
-
-      <form onSubmit={createUser} className="mt-6 grid gap-3 md:grid-cols-4">
-        <input
-          required
-          minLength={2}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Name"
-          className="rounded-md border px-3 py-2"
-        />
-        <input
-          required
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Email"
-          className="rounded-md border px-3 py-2"
-        />
-        <input
-          required
-          type="password"
-          minLength={8}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Temporary password"
-          className="rounded-md border px-3 py-2"
-        />
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-        >
-          {saving ? "Creating..." : "Create user"}
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Users</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Create normal (non-admin) accounts. Onboarding and password reset use the same email
+            flow as admins, with user-specific pages at{" "}
+            <code className="text-xs">/user/login</code>,{" "}
+            <code className="text-xs">/user/forgot-password</code>.
+          </p>
+        </div>
+        <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+          Add user
         </button>
-      </form>
+      </div>
 
-      {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
-      {info ? <p className="mt-3 text-sm text-emerald-700">{info}</p> : null}
+      {error && !formModalOpen ? (
+        <p className="mt-4 text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {info ? <p className="mt-4 text-sm text-emerald-700">{info}</p> : null}
 
       <div className="mt-6 overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b text-slate-600">
+            <tr className="border-b border-slate-200 text-slate-600">
               <th className="px-3 py-2 font-medium">Name</th>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Status</th>
@@ -190,7 +189,7 @@ export function UsersManagement() {
               </tr>
             ) : users.length ? (
               users.map((u) => (
-                <tr key={u.id} className="border-b">
+                <tr key={u.id} className="border-b border-slate-100">
                   <td className="px-3 py-2">{u.name}</td>
                   <td className="px-3 py-2">{u.email}</td>
                   <td className="px-3 py-2">{u.isActive ? "Active" : "Inactive"}</td>
@@ -200,14 +199,14 @@ export function UsersManagement() {
                       <button
                         type="button"
                         onClick={() => void setActive(u.id, !u.isActive)}
-                        className="rounded-md border px-2 py-1 text-xs"
+                        className={adminBtnOutline}
                       >
                         {u.isActive ? "Deactivate" : "Activate"}
                       </button>
                       <button
                         type="button"
                         onClick={() => void removeUser(u.id)}
-                        className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700"
+                        className={adminBtnDangerOutline}
                       >
                         Delete
                       </button>
@@ -225,6 +224,57 @@ export function UsersManagement() {
           </tbody>
         </table>
       </div>
+
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title="Add user"
+        description="Temporary password is emailed when onboarding succeeds."
+        size="sm"
+      >
+        <form onSubmit={createUser} className="grid gap-3">
+          <input
+            required
+            minLength={2}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Name"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="Email"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="password"
+            minLength={8}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Temporary password"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button type="submit" disabled={saving} className={adminBtnPrimary}>
+              {saving ? "Creating…" : "Create user"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </section>
   );
 }

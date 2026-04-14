@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import {
+  adminBtnDangerOutline,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminBtnSecondary,
+} from "@/app/admin/admin-styles";
 
 type ContentKind = "text" | "image" | "pdf" | "word";
 
@@ -59,6 +66,7 @@ export function ContentManagement() {
   const [saving, setSaving] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function loadAll() {
     setLoading(true);
@@ -107,6 +115,18 @@ export function ContentManagement() {
     setTextBody("");
     setFile(null);
     setSelectedUserIds(new Set());
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setEditingId(null);
+    setTitle("");
+    setKind("text");
+    setTextBody("");
+    setFile(null);
+    setSelectedUserIds(new Set());
+    setError("");
+    setFormModalOpen(true);
   }
 
   function startEdit(item: ContentItem) {
@@ -116,6 +136,8 @@ export function ContentManagement() {
     setTextBody(item.textBody ?? "");
     setFile(null);
     setSelectedUserIds(new Set(item.allowedUserIds));
+    setError("");
+    setFormModalOpen(true);
   }
 
   async function submitCreate(event: React.FormEvent<HTMLFormElement>) {
@@ -222,136 +244,28 @@ export function ContentManagement() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">
-          {editingId ? "Edit content" : "Publish content"}
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Choose type (text, image, PDF, or Word), then tick which users may access it.
-        </p>
-
-        <form
-          onSubmit={editingId ? submitEdit : submitCreate}
-          className="mt-4 grid gap-4"
-        >
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">Title</span>
-              <input
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-md border px-3 py-2"
-                placeholder="Title"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">Type</span>
-              <select
-                value={kind}
-                disabled={!!editingId}
-                onChange={(e) => {
-                  setKind(e.target.value as ContentKind);
-                  setFile(null);
-                }}
-                className="w-full rounded-md border px-3 py-2 disabled:bg-slate-100"
-              >
-                {KINDS.map((k) => (
-                  <option key={k.value} value={k.value}>
-                    {k.label}
-                  </option>
-                ))}
-              </select>
-              {editingId ? (
-                <p className="mt-1 text-xs text-slate-500">Type cannot be changed after publish.</p>
-              ) : null}
-            </label>
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Published content</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Browse what is live. Use <span className="font-medium">Add content</span> or{" "}
+              <span className="font-medium">Edit</span> on a row — the form opens in a modal.
+            </p>
           </div>
-
-          {kind === "text" ? (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">Text</span>
-              <textarea
-                required
-                value={textBody}
-                onChange={(e) => setTextBody(e.target.value)}
-                rows={6}
-                className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-                placeholder="Plain text or notes…"
-              />
-            </label>
-          ) : (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">
-                File {editingId ? "(optional — leave empty to keep current)" : ""}
-              </span>
-              <input
-                type="file"
-                required={!editingId}
-                accept={fileAccept(kind)}
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </label>
-          )}
-
-          <fieldset className="rounded-lg border border-slate-200 p-4">
-            <legend className="px-1 text-sm font-medium text-slate-800">
-              Users with access (required)
-            </legend>
-            {activeUsers.length === 0 ? (
-              <p className="text-sm text-slate-500">No active users — create users first.</p>
-            ) : (
-              <ul className="mt-2 grid max-h-48 gap-2 overflow-y-auto sm:grid-cols-2">
-                {activeUsers.map((u) => (
-                  <li key={u.id}>
-                    <label className="flex cursor-pointer items-start gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={selectedUserIds.has(u.id)}
-                        onChange={() => toggleUser(u.id)}
-                        className="mt-1"
-                      />
-                      <span>
-                        <span className="font-medium text-slate-900">{u.name}</span>
-                        <span className="block text-xs text-slate-600">{u.email}</span>
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </fieldset>
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="submit"
-              disabled={saving || activeUsers.length === 0}
-              className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-            >
-              {saving ? "Saving…" : editingId ? "Update" : "Publish"}
-            </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-md border px-4 py-2"
-              >
-                Cancel edit
-              </button>
-            ) : null}
-          </div>
-        </form>
-      </section>
-
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">Published content</h2>
+          <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+            Add content
+          </button>
+        </div>
+        {error && !formModalOpen ? (
+          <p className="mt-4 text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         {loading ? (
-          <p className="mt-2 text-sm text-slate-500">Loading…</p>
+          <p className="mt-4 text-sm text-slate-500">Loading…</p>
         ) : contents.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">Nothing published yet.</p>
+          <p className="mt-4 text-sm text-slate-500">Nothing published yet.</p>
         ) : (
           <ul className="mt-4 space-y-4">
             {contents.map((c) => (
@@ -373,14 +287,14 @@ export function ContentManagement() {
                     <button
                       type="button"
                       onClick={() => startEdit(c)}
-                      className="rounded-md border px-3 py-1.5 text-sm"
+                      className={adminBtnOutline}
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => void remove(c.id)}
-                      className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                      className={adminBtnDangerOutline}
                     >
                       Delete
                     </button>
@@ -418,6 +332,124 @@ export function ContentManagement() {
           </ul>
         )}
       </section>
+
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title={editingId ? "Edit content" : "Publish content"}
+        description="Choose type (text, image, PDF, or Word), then select which users may access it."
+        size="xl"
+      >
+        <form onSubmit={editingId ? submitEdit : submitCreate} className="grid gap-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-slate-800">Title</span>
+              <input
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                placeholder="Title"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-slate-800">Type</span>
+              <select
+                value={kind}
+                disabled={!!editingId}
+                onChange={(e) => {
+                  setKind(e.target.value as ContentKind);
+                  setFile(null);
+                }}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+              >
+                {KINDS.map((k) => (
+                  <option key={k.value} value={k.value}>
+                    {k.label}
+                  </option>
+                ))}
+              </select>
+              {editingId ? (
+                <p className="mt-1 text-xs text-slate-500">Type cannot be changed after publish.</p>
+              ) : null}
+            </label>
+          </div>
+
+          {kind === "text" ? (
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-slate-800">Text</span>
+              <textarea
+                required
+                value={textBody}
+                onChange={(e) => setTextBody(e.target.value)}
+                rows={6}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+                placeholder="Plain text or notes…"
+              />
+            </label>
+          ) : (
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-slate-800">
+                File {editingId ? "(optional — leave empty to keep current)" : ""}
+              </span>
+              <input
+                type="file"
+                required={!editingId}
+                accept={fileAccept(kind)}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
+            </label>
+          )}
+
+          <fieldset className="rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-medium text-slate-800">
+              Users with access (required)
+            </legend>
+            {activeUsers.length === 0 ? (
+              <p className="text-sm text-slate-500">No active users — create users first.</p>
+            ) : (
+              <ul className="admin-scroll-region mt-2 grid max-h-52 gap-2 overflow-y-auto sm:grid-cols-2">
+                {activeUsers.map((u) => (
+                  <li key={u.id}>
+                    <label className="flex cursor-pointer items-start gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.has(u.id)}
+                        onChange={() => toggleUser(u.id)}
+                        className="mt-1"
+                      />
+                      <span>
+                        <span className="font-medium text-slate-900">{u.name}</span>
+                        <span className="block text-xs text-slate-600">{u.email}</span>
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
+
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={saving || activeUsers.length === 0}
+              className={adminBtnPrimary}
+            >
+              {saving ? "Saving…" : editingId ? "Update" : "Publish"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </div>
   );
 }

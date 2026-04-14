@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import {
+  adminBtnDangerOutline,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminBtnSecondary,
+} from "@/app/admin/admin-styles";
 
 type ResearchArea = {
   id: string;
@@ -19,11 +26,11 @@ export function ResearchAreaManagement() {
   const [error, setError] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function loadItems() {
     setLoading(true);
@@ -50,16 +57,21 @@ export function ResearchAreaManagement() {
     void loadItems();
   }, []);
 
-  const editingItem = useMemo(
-    () => items.find((item) => item.id === editingId) ?? null,
-    [items, editingId],
-  );
-
   function resetForm() {
     setEditingId(null);
     setTitle("");
     setDescription("");
     setImageFile(null);
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setEditingId(null);
+    setTitle("");
+    setDescription("");
+    setImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   function startEdit(item: ResearchArea) {
@@ -67,6 +79,8 @@ export function ResearchAreaManagement() {
     setTitle(item.title);
     setDescription(item.description);
     setImageFile(null);
+    setError("");
+    setFormModalOpen(true);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -85,6 +99,7 @@ export function ResearchAreaManagement() {
       const isEdit = Boolean(editingId);
       if (!isEdit && !imageFile) {
         setError("Image is required for new research area.");
+        setSaving(false);
         return;
       }
 
@@ -130,72 +145,25 @@ export function ResearchAreaManagement() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border p-5">
-        <h3 className="text-lg font-semibold">
-          {editingId ? "Edit Research Area" : "Create Research Area"}
-        </h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Image is stored as binary blob in MongoDB.
-        </p>
-
-        <form onSubmit={submit} className="mt-4 grid gap-3">
-          <input
-            required
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Title"
-            className="rounded-md border px-3 py-2"
-          />
-          <textarea
-            required
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Description"
-            rows={4}
-            className="rounded-md border px-3 py-2"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            required={!editingId}
-            onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-            className="rounded-md border px-3 py-2"
-          />
-          {editingId ? (
-            <p className="text-xs text-slate-500">
-              Leave image empty to keep current one.
-            </p>
-          ) : null}
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-            >
-              {saving
-                ? "Saving..."
-                : editingId
-                  ? "Update Research Area"
-                  : "Create Research Area"}
-            </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-md border px-4 py-2"
-              >
-                Cancel
-              </button>
-            ) : null}
-          </div>
-        </form>
-      </section>
-
       <section className="space-y-3">
-        <h3 className="text-lg font-semibold">Research Areas</h3>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Research areas</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Image is stored as binary in MongoDB. Add opens a blank form; Edit keeps the current
+              image unless you upload a new file.
+            </p>
+          </div>
+          <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+            Add research area
+          </button>
+        </div>
+
+        {error && !formModalOpen ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         {loading ? <p className="text-sm text-slate-500">Loading...</p> : null}
 
         {!loading && !items.length ? (
@@ -204,7 +172,7 @@ export function ResearchAreaManagement() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           {items.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-xl border">
+            <article key={item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <Image
                 src={`data:${item.imageMimeType};base64,${item.imageBase64}`}
                 alt={item.title}
@@ -214,23 +182,19 @@ export function ResearchAreaManagement() {
                 className="h-52 w-full object-cover"
               />
               <div className="space-y-2 p-4">
-                <h4 className="text-lg font-semibold">{item.title}</h4>
+                <h4 className="text-lg font-semibold text-slate-900">{item.title}</h4>
                 <p className="text-sm text-slate-700">{item.description}</p>
                 <p className="text-xs text-slate-500">
                   Updated: {new Date(item.updatedAt).toLocaleString()}
                 </p>
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => startEdit(item)}
-                    className="rounded-md border px-3 py-1.5 text-sm"
-                  >
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => void remove(item.id)}
-                    className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                    className={adminBtnDangerOutline}
                   >
                     Delete
                   </button>
@@ -241,11 +205,57 @@ export function ResearchAreaManagement() {
         </div>
       </section>
 
-      {editingItem ? (
-        <p className="text-xs text-slate-500">
-          Editing: <span className="font-medium">{editingItem.title}</span>
-        </p>
-      ) : null}
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title={editingId ? "Edit research area" : "Add research area"}
+        description={
+          editingId
+            ? "Leave image empty to keep the current one."
+            : "Title, description, and an image are required."
+        }
+        size="lg"
+      >
+        <form onSubmit={submit} className="grid gap-3">
+          <input
+            required
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Title"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <textarea
+            required
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="Description"
+            rows={4}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            required={!editingId}
+            onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button type="submit" disabled={saving} className={adminBtnPrimary}>
+              {saving ? "Saving…" : editingId ? "Update research area" : "Create research area"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </div>
   );
 }

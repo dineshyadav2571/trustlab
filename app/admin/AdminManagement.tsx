@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import { adminBtnPrimary, adminBtnSecondary } from "@/app/admin/admin-styles";
 
 type Admin = {
   id: string;
@@ -19,6 +21,7 @@ export function AdminManagement() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
 
   async function loadAdmins() {
     setLoading(true);
@@ -45,6 +48,21 @@ export function AdminManagement() {
     void loadAdmins();
   }, []);
 
+  function resetForm() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setFormModalOpen(false);
+  }
+
+  function openCreateModal() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setError("");
+    setFormModalOpen(true);
+  }
+
   async function createAdmin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -66,9 +84,7 @@ export function AdminManagement() {
         return;
       }
 
-      setName("");
-      setEmail("");
-      setPassword("");
+      resetForm();
       await loadAdmins();
     } catch {
       setError("Could not create admin.");
@@ -78,53 +94,29 @@ export function AdminManagement() {
   }
 
   return (
-    <section className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">Admin Management</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Create and view admin users. Only authenticated admins can access this.
-      </p>
-
-      <form onSubmit={createAdmin} className="mt-6 grid gap-3 md:grid-cols-4">
-        <input
-          required
-          minLength={2}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Name"
-          className="rounded-md border px-3 py-2"
-        />
-        <input
-          required
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Email"
-          className="rounded-md border px-3 py-2"
-        />
-        <input
-          required
-          type="password"
-          minLength={8}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Password"
-          className="rounded-md border px-3 py-2"
-        />
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-        >
-          {saving ? "Creating..." : "Create Admin"}
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Admin accounts</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Create and view admin users. Only authenticated admins can access this.
+          </p>
+        </div>
+        <button type="button" onClick={openCreateModal} className={adminBtnPrimary}>
+          Add admin
         </button>
-      </form>
+      </div>
 
-      {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+      {error && !formModalOpen ? (
+        <p className="mt-4 text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
 
       <div className="mt-6 overflow-x-auto">
-        <table className="w-full border-collapse text-left">
+        <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b text-sm text-slate-600">
+            <tr className="border-b border-slate-200 text-slate-600">
               <th className="px-3 py-2 font-medium">Name</th>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Status</th>
@@ -134,26 +126,22 @@ export function AdminManagement() {
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-3 py-3 text-sm text-slate-500" colSpan={4}>
+                <td className="px-3 py-3 text-slate-500" colSpan={4}>
                   Loading admins...
                 </td>
               </tr>
             ) : admins.length ? (
               admins.map((admin) => (
-                <tr key={admin.id} className="border-b text-sm">
+                <tr key={admin.id} className="border-b border-slate-100">
                   <td className="px-3 py-2">{admin.name}</td>
                   <td className="px-3 py-2">{admin.email}</td>
-                  <td className="px-3 py-2">
-                    {admin.isActive ? "Active" : "Inactive"}
-                  </td>
-                  <td className="px-3 py-2">
-                    {new Date(admin.createdAt).toLocaleString()}
-                  </td>
+                  <td className="px-3 py-2">{admin.isActive ? "Active" : "Inactive"}</td>
+                  <td className="px-3 py-2">{new Date(admin.createdAt).toLocaleString()}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="px-3 py-3 text-sm text-slate-500" colSpan={4}>
+                <td className="px-3 py-3 text-slate-500" colSpan={4}>
                   No admins found.
                 </td>
               </tr>
@@ -161,6 +149,57 @@ export function AdminManagement() {
           </tbody>
         </table>
       </div>
+
+      <AdminFormModal
+        open={formModalOpen}
+        onClose={resetForm}
+        title="Add admin"
+        description="Name, email, and password (min 8 characters) are required."
+        size="sm"
+      >
+        <form onSubmit={createAdmin} className="grid gap-3">
+          <input
+            required
+            minLength={2}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Name"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="Email"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            required
+            type="password"
+            minLength={8}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button type="submit" disabled={saving} className={adminBtnPrimary}>
+              {saving ? "Creating…" : "Create admin"}
+            </button>
+            <button type="button" onClick={resetForm} className={adminBtnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </AdminFormModal>
     </section>
   );
 }

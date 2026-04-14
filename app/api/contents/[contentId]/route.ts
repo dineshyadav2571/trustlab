@@ -2,11 +2,7 @@ import { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDb } from "@/lib/db";
 import { authenticateRequest } from "@/lib/auth-guard";
-import {
-  Content,
-  contentKinds,
-  type ContentKind,
-} from "@/lib/models/Content";
+import { Content, type ContentKind } from "@/lib/models/Content";
 import { AppUser } from "@/lib/models/AppUser";
 
 const MAX_FILE_BYTES = 12 * 1024 * 1024;
@@ -17,10 +13,6 @@ type RouteContext = {
 
 function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-}
-
-function isContentKind(v: string): v is ContentKind {
-  return contentKinds.includes(v as ContentKind);
 }
 
 function mimeMatchesKind(kind: ContentKind, mime: string): boolean {
