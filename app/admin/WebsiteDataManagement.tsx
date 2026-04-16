@@ -207,7 +207,7 @@ export function WebsiteDataManagement() {
       {info ? <p className="text-sm text-emerald-700">{info}</p> : null}
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={saving} className={adminBtnPrimary}>{saving ? "Saving…" : "Save website data"}</button>
+        <button type="submit" disabled={saving} className={adminBtnPrimary}>{saving ? "Savingâ€¦" : "Save website data"}</button>
         <button type="button" onClick={() => void loadWebsiteData()} className={adminBtnSecondary}>Reload</button>
       </div>
     </form>
