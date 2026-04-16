@@ -43,6 +43,8 @@ export async function PATCH(request: NextRequest) {
     const branding = {
       labName: String(formData.get("branding.labName") ?? "").trim(),
       shortName: String(formData.get("branding.shortName") ?? "").trim(),
+      siteTitle: String(formData.get("branding.siteTitle") ?? "").trim(),
+      siteDescription: String(formData.get("branding.siteDescription") ?? "").trim(),
       heroTitle: String(formData.get("branding.heroTitle") ?? "").trim(),
       heroSubtitle: String(formData.get("branding.heroSubtitle") ?? "").trim(),
       tagline: String(formData.get("branding.tagline") ?? "").trim(),
@@ -72,6 +74,8 @@ export async function PATCH(request: NextRequest) {
     if (
       !branding.labName ||
       !branding.shortName ||
+      !branding.siteTitle ||
+      !branding.siteDescription ||
       !branding.heroTitle ||
       !branding.heroSubtitle ||
       !branding.tagline ||
@@ -103,6 +107,8 @@ export async function PATCH(request: NextRequest) {
 
     doc.branding.labName = branding.labName;
     doc.branding.shortName = branding.shortName;
+    doc.branding.siteTitle = branding.siteTitle;
+    doc.branding.siteDescription = branding.siteDescription;
     doc.branding.heroTitle = branding.heroTitle;
     doc.branding.heroSubtitle = branding.heroSubtitle;
     doc.branding.tagline = branding.tagline;

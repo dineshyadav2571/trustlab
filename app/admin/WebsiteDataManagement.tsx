@@ -11,6 +11,8 @@ type WebsiteData = {
   branding: {
     labName: string;
     shortName: string;
+    siteTitle: string;
+    siteDescription: string;
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -104,6 +106,8 @@ export function WebsiteDataManagement() {
       const formData = new FormData();
       formData.append("branding.labName", data.branding.labName);
       formData.append("branding.shortName", data.branding.shortName);
+      formData.append("branding.siteTitle", data.branding.siteTitle);
+      formData.append("branding.siteDescription", data.branding.siteDescription);
       formData.append("branding.heroTitle", data.branding.heroTitle);
       formData.append("branding.heroSubtitle", data.branding.heroSubtitle);
       formData.append("branding.tagline", data.branding.tagline);
@@ -154,6 +158,8 @@ export function WebsiteDataManagement() {
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <input value={data.branding.labName} onChange={(e) => update("branding", { labName: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Lab name" required />
           <input value={data.branding.shortName} onChange={(e) => update("branding", { shortName: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Short name" required />
+          <input value={data.branding.siteTitle} onChange={(e) => update("branding", { siteTitle: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2" placeholder="Website title shown in browser tab" required />
+          <textarea value={data.branding.siteDescription} onChange={(e) => update("branding", { siteDescription: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2" rows={3} placeholder="Website description for metadata" required />
           <input value={data.branding.heroTitle} onChange={(e) => update("branding", { heroTitle: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Hero title" required />
           <input value={data.branding.heroSubtitle} onChange={(e) => update("branding", { heroSubtitle: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Hero subtitle" required />
           <input value={data.branding.tagline} onChange={(e) => update("branding", { tagline: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Tagline" required />
@@ -207,7 +213,7 @@ export function WebsiteDataManagement() {
       {info ? <p className="text-sm text-emerald-700">{info}</p> : null}
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={saving} className={adminBtnPrimary}>{saving ? "Saving…" : "Save website data"}</button>
+        <button type="submit" disabled={saving} className={adminBtnPrimary}>{saving ? "Saving..." : "Save website data"}</button>
         <button type="button" onClick={() => void loadWebsiteData()} className={adminBtnSecondary}>Reload</button>
       </div>
     </form>

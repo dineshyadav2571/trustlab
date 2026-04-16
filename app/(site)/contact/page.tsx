@@ -1,10 +1,10 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { ContactBlocks } from "@/app/components/site/ContactBlocks";
 import { getPublicWebsiteData } from "@/lib/website-data";
 
 export const metadata: Metadata = {
-  title: "Contact | BTrust Lab @ IIITM Gwalior",
-  description: "Visit BTrust Lab at ABV-IIITM Gwalior - address, email, and links.",
+  title: "Contact",
+  description: "Address, email, map, and contact links.",
 };
 
 export default async function ContactPage() {

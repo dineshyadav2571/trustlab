@@ -4,6 +4,8 @@ export interface WebsiteDataDocument {
   branding: {
     labName: string;
     shortName: string;
+    siteTitle: string;
+    siteDescription: string;
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -44,6 +46,8 @@ const websiteDataSchema = new Schema<WebsiteDataDocument>(
     branding: {
       labName: { type: String, required: true, trim: true, maxlength: 180 },
       shortName: { type: String, required: true, trim: true, maxlength: 80 },
+      siteTitle: { type: String, required: true, trim: true, maxlength: 220 },
+      siteDescription: { type: String, required: true, trim: true, maxlength: 500 },
       heroTitle: { type: String, required: true, trim: true, maxlength: 180 },
       heroSubtitle: { type: String, required: true, trim: true, maxlength: 180 },
       tagline: { type: String, required: true, trim: true, maxlength: 180 },

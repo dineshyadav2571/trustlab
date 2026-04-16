@@ -7,8 +7,8 @@ import { connectToDb } from "@/lib/db";
 import { NewsHighlight } from "@/lib/models/NewsHighlight";
 
 export const metadata: Metadata = {
-  title: "News & Highlights | BTrust Lab @ IIITM Gwalior",
-  description: "Recent news, events, and highlights from BTrust Lab, IIITM Gwalior.",
+  title: "News & Highlights",
+  description: "Recent news, events, and highlights.",
 };
 
 export default async function NewsPage() {

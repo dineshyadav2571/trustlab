@@ -7,8 +7,8 @@ import { connectToDb } from "@/lib/db";
 import { Publication } from "@/lib/models/Publication";
 
 export const metadata: Metadata = {
-  title: "Publications | BTrust Lab @ IIITM Gwalior",
-  description: "Journal articles, conference papers, and books from BTrust Lab, IIITM Gwalior.",
+  title: "Publications",
+  description: "Journal articles, conference papers, and books.",
 };
 
 export default async function PublicationsPage() {

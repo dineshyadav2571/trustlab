@@ -7,9 +7,8 @@ import { connectToDb } from "@/lib/db";
 import { Achievement } from "@/lib/models/Achievement";
 
 export const metadata: Metadata = {
-  title: "Achievements | BTrust Lab @ IIITM Gwalior",
-  description:
-    "Achievements, invited talks, and short-term programs at BTrust Lab, IIITM Gwalior.",
+  title: "Achievements",
+  description: "Achievements, invited talks, and short-term programs.",
 };
 
 export default async function AchievementsPage() {

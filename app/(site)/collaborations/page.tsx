@@ -7,8 +7,8 @@ import { connectToDb } from "@/lib/db";
 import { Collaboration } from "@/lib/models/Collaboration";
 
 export const metadata: Metadata = {
-  title: "Collaborations | BTrust Lab @ IIITM Gwalior",
-  description: "International and institutional collaborations of BTrust Lab, IIITM Gwalior.",
+  title: "Collaborations",
+  description: "Institutional and international collaborations.",
 };
 
 export default async function CollaborationsPage() {

@@ -6,8 +6,8 @@ import { People } from "@/lib/models/People";
 import { getPublicWebsiteData } from "@/lib/website-data";
 
 export const metadata: Metadata = {
-  title: "People | BTrust Lab @ IIITM Gwalior",
-  description: "Faculty and research scholars at BTrust Lab, IIITM Gwalior.",
+  title: "People",
+  description: "Faculty, lab lead, and research scholars.",
 };
 
 export default async function PeoplePage() {

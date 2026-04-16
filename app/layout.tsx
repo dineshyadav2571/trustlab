@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getPublicWebsiteData } from "@/lib/website-data";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "BTrust Lab @ IIITM Gwalior | Blockchain Technology Lab",
-  description: "BTrust Lab — Blockchain Technology Lab at IIITM Gwalior. Research in blockchain, security, and distributed systems.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const websiteData = await getPublicWebsiteData();
+
+  return {
+    title: {
+      default: websiteData.branding.siteTitle,
+      template: `%s | ${websiteData.branding.siteTitle}`,
+    },
+    description: websiteData.branding.siteDescription,
+  };
+}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

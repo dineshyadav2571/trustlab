@@ -5,6 +5,8 @@ export type PublicWebsiteData = {
   branding: {
     labName: string;
     shortName: string;
+    siteTitle: string;
+    siteDescription: string;
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -40,27 +42,30 @@ export type PublicWebsiteData = {
 
 export const defaultWebsiteData: PublicWebsiteData = {
   branding: {
-    labName: "BTrust Lab @ IIITM Gwalior",
-    shortName: "BTrust LAB",
-    heroTitle: "BTrust Lab @ IIITM Gwalior",
-    heroSubtitle: "( Blockchain Technology Lab )",
-    tagline: "Securing the Data",
-    footerText: "IIITM Gwalior. All rights reserved.",
+    labName: "Your Lab Name",
+    shortName: "YOUR LAB",
+    siteTitle: "Your Lab Name | Research and Innovation",
+    siteDescription:
+      "A research lab website for innovation, publications, projects, people, and collaborations.",
+    heroTitle: "Your Lab Name",
+    heroSubtitle: "Research, Innovation, and Collaboration",
+    tagline: "Building ideas into impact",
+    footerText: "All rights reserved.",
     iconMimeType: "",
     iconBase64: "",
   },
   about: {
     title: "About Us",
     body:
-      "The BTrust Lab (Blockchain Technology Lab) is integral to the dynamic academic community at the Indian Institute of Information Technology and Management Gwalior (IIITM). Its mission is to conduct innovative research in information security, decision systems, Internet of Vehicles (IoV), Internet of Things (IoT), electric vehicles, electronic healthcare records (EHR), and real estate. The ultimate goal of this research is to address complex problems within various social welfare contexts.\n\nWith the rapid advancement of technology in areas such as the Internet of Things (IoT), big data, communications, computing, crowd sensing, and social networking, vast amounts of data are being generated, presenting opportunities for discovery. To address challenges related to this data's size, speed, diversity, and complexity, our study aims to understand and analyse it to extract precise and actionable insights.\n\nOur team, consisting of seasoned experts and dynamic young scholars, is dedicated to advancing the frontiers of security. Every project we embark on is fueled by a deep passion for knowledge and a commitment to crafting cutting-edge solutions. We are committed to nurturing the BTrust Lab's collaborative and inclusive research culture.",
+      "This section introduces your lab, its mission, and the broad problems it aims to solve.\n\nUse this space to describe the vision of the lab, the major research themes, and the real-world impact of your work.\n\nYou can also highlight the culture of the lab, your strengths, and what makes the group unique.",
     imageMimeType: "",
     imageBase64: "",
   },
   lead: {
-    name: "Dr. Amrendra Singh Yadav",
-    role: "Assistant Professor, Department of Computer Science and Engineering (CSE), IIITM Gwalior",
+    name: "Dr. Lead Name",
+    role: "Principal Investigator / Faculty Lead",
     bio:
-      "Dr. Amrendra Singh Yadav is an Assistant Professor in the Department of Computer Science and Engineering at the Indian Institute of Information Technology and Management (IIITM) Gwalior. His research spans blockchain systems, the Internet of Things (IoT), information security, and distributed applications for smart infrastructure, vehicular networks, and trustworthy data management.\n\nHe actively contributes to the BTrust Lab's mission by investigating secure and efficient protocols, consensus and sharding strategies, and real-world deployments that bridge academic research with societal impact. His work is reflected in peer-reviewed publications and ongoing collaborations with students and researchers across security and systems.\n\nHe is committed to mentoring scholars, strengthening the lab's collaborative culture, and advancing practical solutions at the intersection of blockchain, networking, and applied security.",
+      "Write a short professional introduction for the lab lead here.\n\nInclude the lead's expertise, major research interests, and mentoring or collaboration focus.\n\nThis content is shown on the People page above the research scholars.",
     scholarUrl: "https://scholar.google.com/",
     researchGateUrl: "https://www.researchgate.net/",
     imageMimeType: "",
@@ -82,6 +87,8 @@ function serialize(doc: InstanceType<typeof WebsiteData>): PublicWebsiteData {
     branding: {
       labName: doc.branding.labName,
       shortName: doc.branding.shortName,
+      siteTitle: doc.branding.siteTitle,
+      siteDescription: doc.branding.siteDescription,
       heroTitle: doc.branding.heroTitle,
       heroSubtitle: doc.branding.heroSubtitle,
       tagline: doc.branding.tagline,

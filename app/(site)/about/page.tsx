@@ -1,11 +1,10 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getPublicWebsiteData } from "@/lib/website-data";
 
 export const metadata: Metadata = {
-  title: "About Us | BTrust Lab @ IIITM Gwalior",
-  description:
-    "BTrust Lab (Blockchain Technology Lab) at IIITM Gwalior - mission, research focus, and team.",
+  title: "About Us",
+  description: "Mission, research focus, and team information.",
 };
 
 export default async function AboutPage() {
