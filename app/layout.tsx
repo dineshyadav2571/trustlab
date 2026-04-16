@@ -8,6 +8,10 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export async function generateMetadata(): Promise<Metadata> {
   const websiteData = await getPublicWebsiteData();
+  const iconUrl =
+    websiteData.branding.iconMimeType && websiteData.branding.iconBase64
+      ? `data:${websiteData.branding.iconMimeType};base64,${websiteData.branding.iconBase64}`
+      : undefined;
 
   return {
     title: {
@@ -15,6 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${websiteData.branding.siteTitle}`,
     },
     description: websiteData.branding.siteDescription,
+    icons: iconUrl
+      ? {
+          icon: [{ url: iconUrl }],
+          shortcut: [{ url: iconUrl }],
+          apple: [{ url: iconUrl }],
+        }
+      : undefined,
   };
 }
 

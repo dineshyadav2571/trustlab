@@ -3,7 +3,6 @@ import Image from "next/image";
 type BTrustLogoProps = {
   className?: string;
   shortName: string;
-  tagline: string;
   iconMimeType?: string;
   iconBase64?: string;
 };
@@ -24,11 +23,11 @@ function DefaultLogoIcon() {
   );
 }
 
-export function BTrustLogo({ className = "", shortName, tagline, iconMimeType = "", iconBase64 = "" }: BTrustLogoProps) {
+export function BTrustLogo({ className = "", shortName, iconMimeType = "", iconBase64 = "" }: BTrustLogoProps) {
   const hasUploadedIcon = iconMimeType && iconBase64;
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm" aria-hidden>
+    <div className={`flex min-w-0 items-center gap-3 ${className}`}>
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm sm:h-12 sm:w-12" aria-hidden>
         {hasUploadedIcon ? (
           <Image
             src={`data:${iconMimeType};base64,${iconBase64}`}
@@ -42,9 +41,8 @@ export function BTrustLogo({ className = "", shortName, tagline, iconMimeType = 
           <DefaultLogoIcon />
         )}
       </div>
-      <div className="leading-tight">
-        <span className="text-lg font-semibold tracking-tight text-[var(--btrust-teal)]">{shortName}</span>
-        <p className="text-[11px] text-slate-500">{tagline}</p>
+      <div className="min-w-0 truncate text-base font-semibold tracking-tight text-[var(--btrust-teal)] sm:text-lg">
+        <span className="truncate">{shortName}</span>
       </div>
     </div>
   );
