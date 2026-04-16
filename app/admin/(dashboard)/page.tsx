@@ -18,6 +18,19 @@ export default function AdminOverviewPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <Link
+          href="/admin/website-data"
+          className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Module
+          </p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">Website Data</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Edit singleton site content such as branding, hero, about, lead profile, and contact.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/admins"
           className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
         >
@@ -189,3 +202,4 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
+
