@@ -4,8 +4,8 @@ import { connectToDb } from "@/lib/db";
 import { Patent } from "@/lib/models/Patent";
 
 export const metadata: Metadata = {
-  title: "Patents | BTrust Lab @ IIITM Gwalior",
-  description: "Granted and published patents from BTrust Lab, IIITM Gwalior.",
+  title: "Patents",
+  description: "Granted and published patents.",
 };
 
 export default async function PatentsPage() {

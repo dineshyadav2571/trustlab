@@ -1,37 +1,53 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
-export function UserContentFab() {
+type SessionState = "loading" | "guest" | "authenticated";
+
+export function UserHeaderAccess() {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [clientId, setClientId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sessionState, setSessionState] = useState<SessionState>("loading");
+
+  const checkSession = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/user/me", { credentials: "include" });
+      setSessionState(res.ok ? "authenticated" : "guest");
+      return res.ok;
+    } catch {
+      setSessionState("guest");
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
 
   const goToContent = useCallback(() => {
     setModalOpen(false);
     router.push("/user/content");
   }, [router]);
 
-  const handleFabClick = useCallback(async () => {
+  const handleActionClick = useCallback(async () => {
     setError(null);
-    try {
-      const res = await fetch("/api/auth/user/me", { credentials: "include" });
-      if (res.ok) {
-        goToContent();
-        return;
-      }
-    } catch {
-      setError("Could not reach the server.");
-      setModalOpen(true);
+    if (sessionState === "authenticated") {
+      goToContent();
+      return;
+    }
+    const isAuthenticated = await checkSession();
+    if (isAuthenticated) {
+      goToContent();
       return;
     }
     setModalOpen(true);
-  }, [goToContent]);
+  }, [checkSession, goToContent, sessionState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +68,7 @@ export function UserContentFab() {
         setError(data.error ?? "Sign-in failed.");
         return;
       }
+      setSessionState("authenticated");
       setPassword("");
       goToContent();
     } catch {
@@ -65,27 +82,11 @@ export function UserContentFab() {
     <>
       <button
         type="button"
-        onClick={handleFabClick}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--btrust-teal)] text-white shadow-lg transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--btrust-teal)]"
-        aria-label="Open your assigned downloads and content"
-        title="Your content"
+        onClick={handleActionClick}
+        className="rounded-md border border-[var(--btrust-teal)] px-3 py-2 text-sm font-medium text-[var(--btrust-teal)] transition hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--btrust-teal)] focus-visible:ring-offset-2"
+        aria-label={sessionState === "authenticated" ? "Open your dashboard" : "Sign in to your dashboard"}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="26"
-          height="26"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
+        {sessionState === "authenticated" ? "Dashboard" : "Login"}
       </button>
 
       {modalOpen ? (

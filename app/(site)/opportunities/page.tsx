@@ -4,9 +4,8 @@ import { connectToDb } from "@/lib/db";
 import { Opportunity } from "@/lib/models/Opportunity";
 
 export const metadata: Metadata = {
-  title: "Opportunities | BTrust Lab @ IIITM Gwalior",
-  description:
-    "Research fellowships, Ph.D. opportunities, and openings at BTrust Lab, IIITM Gwalior.",
+  title: "Opportunities",
+  description: "Research fellowships, openings, and academic opportunities.",
 };
 
 export default async function OpportunitiesPage() {

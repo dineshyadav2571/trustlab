@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { ContactBlocks } from "@/app/components/site/ContactBlocks";
-import { SITE_CONTACT } from "@/lib/site-contact";
+import { getPublicWebsiteData } from "@/lib/website-data";
 
 export const metadata: Metadata = {
-  title: "Contact | BTrust Lab @ IIITM Gwalior",
-  description: "Visit BTrust Lab at ABV-IIITM Gwalior — address, email, and links.",
+  title: "Contact",
+  description: "Address, email, map, and contact links.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const websiteData = await getPublicWebsiteData();
+
   return (
     <div className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
@@ -20,7 +22,7 @@ export default function ContactPage() {
           <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
             <iframe
               title="ABV-IIITM Gwalior on Google Maps"
-              src={SITE_CONTACT.mapEmbedUrl}
+              src={websiteData.contact.mapEmbedUrl}
               className="h-[min(420px,55vh)] w-full border-0 md:h-[440px]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -29,7 +31,7 @@ export default function ContactPage() {
           </div>
         </section>
 
-        <ContactBlocks />
+        <ContactBlocks contact={websiteData.contact} />
       </div>
     </div>
   );
