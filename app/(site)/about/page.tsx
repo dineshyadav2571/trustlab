@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { LabLeadSection } from "@/app/components/site/LabLeadSection";
 import { getPublicWebsiteData } from "@/lib/website-data";
 
 export const metadata: Metadata = {
@@ -49,6 +50,10 @@ export default async function AboutPage() {
               <p key={paragraph.slice(0, 40)}>{paragraph}</p>
             ))}
           </div>
+        </div>
+
+        <div className="mt-16 border-t border-slate-100 pt-14 md:mt-20 md:pt-16">
+          <LabLeadSection lead={websiteData.lead} />
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getAuthenticatedAdminFromCookies } from "@/lib/auth";
-import { connectToDb } from "@/lib/db";
+import { dbQuery } from "@/lib/db";
 import { Admin } from "@/lib/models/Admin";
 import { SidebarNav } from "@/app/admin/(dashboard)/SidebarNav";
 
@@ -18,8 +18,9 @@ export default async function DashboardLayout({
     redirect("/admin/login");
   }
 
-  await connectToDb();
-  const currentAdmin = await Admin.findById(auth.sub).lean();
+  const currentAdmin = await dbQuery(() =>
+    Admin.findById(auth.sub).select("name email isActive").lean(),
+  );
   if (!currentAdmin || !currentAdmin.isActive) {
     redirect("/admin/login");
   }

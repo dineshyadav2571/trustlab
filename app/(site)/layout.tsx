@@ -1,16 +1,16 @@
 import { ReactNode } from "react";
 import { SiteFooter } from "@/app/components/site/SiteFooter";
 import { SiteHeader } from "@/app/components/site/SiteHeader";
-import { getPublicWebsiteData } from "@/lib/website-data";
+import { getSiteLayoutData } from "@/lib/website-data";
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const websiteData = await getPublicWebsiteData();
+  const site = await getSiteLayoutData();
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <SiteHeader branding={websiteData.branding} />
+      <SiteHeader branding={site.branding} />
       <main className="flex-1">{children}</main>
-      <SiteFooter labName={websiteData.branding.labName} footerText={websiteData.branding.footerText} />
+      <SiteFooter labName={site.labName} footerText={site.footerText} />
     </div>
   );
 }

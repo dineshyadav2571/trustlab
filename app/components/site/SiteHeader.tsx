@@ -17,8 +17,11 @@ type SiteHeaderProps = {
 
 const primaryItems = [
   { href: "/", label: "Home" },
+  { href: "/other-activities", label: "Other Activities" },
   { href: "/about", label: "About" },
-  { href: "/people", label: "People" },
+  { href: "/students", label: "Students" },
+  { href: "/teaching", label: "Teaching" },
+  { href: "/administration", label: "Administration" },
 ];
 
 const groupedItems = [

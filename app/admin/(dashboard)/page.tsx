@@ -31,6 +31,21 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
+          href="/admin/other-activities"
+          className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Module
+          </p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">
+            Other Activities
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Lectures, programmes, awards, memberships, and skills as stacked sections.
+          </p>
+        </Link>
+
+        <Link
           href="/admin/admins"
           className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
         >
@@ -85,15 +100,15 @@ export default function AdminOverviewPage() {
         </Link>
 
         <Link
-          href="/admin/peoples"
+          href="/admin/students"
           className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
             Module
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">Peoples</h3>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">Students</h3>
           <p className="mt-1 text-sm text-slate-600">
-            CRUD for person profiles with two image URLs and research details.
+            Thesis supervised entries by category for the public Students page.
           </p>
         </Link>
 
@@ -107,6 +122,34 @@ export default function AdminOverviewPage() {
           <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">Publications</h3>
           <p className="mt-1 text-sm text-slate-600">
             Category enum, text details, and optional external link.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/teaching"
+          className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Module
+          </p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">Teaching</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Courses taught list shown on the public Teaching page.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/administration"
+          className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm ring-1 ring-transparent transition hover:border-slate-300 hover:shadow-md hover:ring-slate-200/80"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Module
+          </p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900 group-hover:text-[var(--btrust-teal)]">
+            Administration
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Section headings with multiple administrative role entries each.
           </p>
         </Link>
 

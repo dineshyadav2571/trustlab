@@ -5,7 +5,26 @@ import { useEffect, useState } from "react";
 import {
   adminBtnPrimary,
   adminBtnSecondary,
+  adminBtnOutline,
+  adminBtnDangerOutline,
 } from "@/app/admin/admin-styles";
+
+type ProfileLink = { id: string; label: string; url: string; sortOrder: number };
+type EmploymentEntry = {
+  id: string;
+  title: string;
+  period: string;
+  description: string;
+  sortOrder: number;
+};
+type EducationEntry = {
+  id: string;
+  degree: string;
+  period: string;
+  details: string;
+  thesisUrl: string;
+  sortOrder: number;
+};
 
 type WebsiteData = {
   branding: {
@@ -29,11 +48,24 @@ type WebsiteData = {
   lead: {
     name: string;
     role: string;
+    location: string;
+    phone: string;
+    cvUrl: string;
     bio: string;
     scholarUrl: string;
     researchGateUrl: string;
     imageMimeType: string;
     imageBase64: string;
+  };
+  home: {
+    aboutSummary: string;
+    highlightsText: string;
+    researchInterestsText: string;
+    recentProjectsLimit: number;
+    recentPublicationsLimit: number;
+    profileLinks: ProfileLink[];
+    employment: EmploymentEntry[];
+    education: EducationEntry[];
   };
   contact: {
     addressLine: string;
@@ -45,6 +77,45 @@ type WebsiteData = {
     mapEmbedUrl: string;
   };
 };
+
+type ApiWebsiteData = Omit<WebsiteData, "home"> & {
+  home: {
+    aboutSummary: string;
+    highlights: string[];
+    researchInterests: string[];
+    recentProjectsLimit: number;
+    recentPublicationsLimit: number;
+    profileLinks: ProfileLink[];
+    employment: EmploymentEntry[];
+    education: EducationEntry[];
+  };
+};
+
+function newId() {
+  return `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function normalizeFromApi(raw: ApiWebsiteData): WebsiteData {
+  return {
+    ...raw,
+    lead: {
+      ...raw.lead,
+      location: raw.lead.location ?? "",
+      phone: raw.lead.phone ?? "",
+      cvUrl: raw.lead.cvUrl ?? "",
+    },
+    home: {
+      aboutSummary: raw.home.aboutSummary,
+      highlightsText: raw.home.highlights.join("\n"),
+      researchInterestsText: raw.home.researchInterests.join("\n"),
+      recentProjectsLimit: raw.home.recentProjectsLimit,
+      recentPublicationsLimit: raw.home.recentPublicationsLimit,
+      profileLinks: raw.home.profileLinks,
+      employment: raw.home.employment,
+      education: raw.home.education,
+    },
+  };
+}
 
 function PreviewImage({ mimeType, base64, alt }: { mimeType: string; base64: string; alt: string }) {
   if (!mimeType || !base64) return null;
@@ -75,12 +146,12 @@ export function WebsiteDataManagement() {
     setError("");
     try {
       const response = await fetch("/api/website-data", { cache: "no-store" });
-      const json = (await response.json()) as { websiteData?: WebsiteData; error?: string };
+      const json = (await response.json()) as { websiteData?: ApiWebsiteData; error?: string };
       if (!response.ok || !json.websiteData) {
         setError(json.error ?? "Could not load website data.");
         return;
       }
-      setData(json.websiteData);
+      setData(normalizeFromApi(json.websiteData));
     } catch {
       setError("Could not load website data.");
     } finally {
@@ -94,6 +165,10 @@ export function WebsiteDataManagement() {
 
   function update<K extends keyof WebsiteData>(section: K, patch: Partial<WebsiteData[K]>) {
     setData((prev) => (prev ? { ...prev, [section]: { ...prev[section], ...patch } } : prev));
+  }
+
+  function updateHome(patch: Partial<WebsiteData["home"]>) {
+    setData((prev) => (prev ? { ...prev, home: { ...prev.home, ...patch } } : prev));
   }
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
@@ -116,9 +191,46 @@ export function WebsiteDataManagement() {
       formData.append("about.body", data.about.body);
       formData.append("lead.name", data.lead.name);
       formData.append("lead.role", data.lead.role);
+      formData.append("lead.location", data.lead.location);
+      formData.append("lead.phone", data.lead.phone);
+      formData.append("lead.cvUrl", data.lead.cvUrl);
       formData.append("lead.bio", data.lead.bio);
       formData.append("lead.scholarUrl", data.lead.scholarUrl);
       formData.append("lead.researchGateUrl", data.lead.researchGateUrl);
+      formData.append("home.aboutSummary", data.home.aboutSummary);
+      formData.append("home.highlightsText", data.home.highlightsText);
+      formData.append("home.researchInterestsText", data.home.researchInterestsText);
+      formData.append("home.recentProjectsLimit", String(data.home.recentProjectsLimit));
+      formData.append("home.recentPublicationsLimit", String(data.home.recentPublicationsLimit));
+      formData.append(
+        "home.profileLinks",
+        JSON.stringify(
+          data.home.profileLinks.map(({ label, url, sortOrder }) => ({ label, url, sortOrder })),
+        ),
+      );
+      formData.append(
+        "home.employment",
+        JSON.stringify(
+          data.home.employment.map(({ title, period, description, sortOrder }) => ({
+            title,
+            period,
+            description,
+            sortOrder,
+          })),
+        ),
+      );
+      formData.append(
+        "home.education",
+        JSON.stringify(
+          data.home.education.map(({ degree, period, details, thesisUrl, sortOrder }) => ({
+            degree,
+            period,
+            details,
+            thesisUrl,
+            sortOrder,
+          })),
+        ),
+      );
       formData.append("contact.addressLine", data.contact.addressLine);
       formData.append("contact.email", data.contact.email);
       formData.append("contact.webUrl", data.contact.webUrl);
@@ -131,12 +243,12 @@ export function WebsiteDataManagement() {
       if (leadImage) formData.append("lead.image", leadImage);
 
       const response = await fetch("/api/website-data", { method: "PATCH", body: formData });
-      const json = (await response.json()) as { websiteData?: WebsiteData; error?: string };
+      const json = (await response.json()) as { websiteData?: ApiWebsiteData; error?: string };
       if (!response.ok || !json.websiteData) {
         setError(json.error ?? "Could not save website data.");
         return;
       }
-      setData(json.websiteData);
+      setData(normalizeFromApi(json.websiteData));
       setBrandingIcon(null);
       setAboutImage(null);
       setLeadImage(null);
@@ -153,6 +265,294 @@ export function WebsiteDataManagement() {
 
   return (
     <form onSubmit={save} className="space-y-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900">Home page</h3>
+        <p className="mt-1 text-sm text-slate-600">
+          Profile card, about summary, highlights, employment, and education shown on the home page.
+          Recent publications and projects are pulled automatically from their admin modules.
+        </p>
+        <div className="mt-4 grid gap-3">
+          <textarea
+            value={data.home.aboutSummary}
+            onChange={(e) => updateHome({ aboutSummary: e.target.value })}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            rows={4}
+            placeholder="Short about paragraph for home page"
+            required
+          />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                Highlights (one per line)
+              </label>
+              <textarea
+                value={data.home.highlightsText}
+                onChange={(e) => updateHome({ highlightsText: e.target.value })}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                rows={6}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                Research interests (one per line)
+              </label>
+              <textarea
+                value={data.home.researchInterestsText}
+                onChange={(e) => updateHome({ researchInterestsText: e.target.value })}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                rows={6}
+              />
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                Recent projects count
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={data.home.recentProjectsLimit}
+                onChange={(e) =>
+                  updateHome({ recentProjectsLimit: Number(e.target.value) || 5 })
+                }
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                Recent publications count
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={data.home.recentPublicationsLimit}
+                onChange={(e) =>
+                  updateHome({ recentPublicationsLimit: Number(e.target.value) || 5 })
+                }
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-800">Profile links</h4>
+              <button
+                type="button"
+                className={adminBtnOutline}
+                onClick={() =>
+                  updateHome({
+                    profileLinks: [
+                      ...data.home.profileLinks,
+                      { id: newId(), label: "", url: "", sortOrder: data.home.profileLinks.length },
+                    ],
+                  })
+                }
+              >
+                Add link
+              </button>
+            </div>
+            {data.home.profileLinks.map((link, index) => (
+              <div key={link.id} className="grid gap-2 rounded-md border border-slate-200 p-3 md:grid-cols-[1fr_1fr_auto]">
+                <input
+                  value={link.label}
+                  onChange={(e) => {
+                    const profileLinks = [...data.home.profileLinks];
+                    profileLinks[index] = { ...profileLinks[index], label: e.target.value };
+                    updateHome({ profileLinks });
+                  }}
+                  className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  placeholder="Label (e.g. Faculty Profile)"
+                />
+                <input
+                  value={link.url}
+                  onChange={(e) => {
+                    const profileLinks = [...data.home.profileLinks];
+                    profileLinks[index] = { ...profileLinks[index], url: e.target.value };
+                    updateHome({ profileLinks });
+                  }}
+                  className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  placeholder="https://"
+                />
+                <button
+                  type="button"
+                  className={adminBtnDangerOutline}
+                  onClick={() =>
+                    updateHome({
+                      profileLinks: data.home.profileLinks.filter((item) => item.id !== link.id),
+                    })
+                  }
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3 border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-800">Employment history</h4>
+              <button
+                type="button"
+                className={adminBtnOutline}
+                onClick={() =>
+                  updateHome({
+                    employment: [
+                      ...data.home.employment,
+                      {
+                        id: newId(),
+                        title: "",
+                        period: "",
+                        description: "",
+                        sortOrder: data.home.employment.length,
+                      },
+                    ],
+                  })
+                }
+              >
+                Add entry
+              </button>
+            </div>
+            {data.home.employment.map((entry, index) => (
+              <div key={entry.id} className="space-y-2 rounded-md border border-slate-200 p-3">
+                <div className="grid gap-2 md:grid-cols-2">
+                  <input
+                    value={entry.title}
+                    onChange={(e) => {
+                      const employment = [...data.home.employment];
+                      employment[index] = { ...employment[index], title: e.target.value };
+                      updateHome({ employment });
+                    }}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="Job title"
+                  />
+                  <input
+                    value={entry.period}
+                    onChange={(e) => {
+                      const employment = [...data.home.employment];
+                      employment[index] = { ...employment[index], period: e.target.value };
+                      updateHome({ employment });
+                    }}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="April 2023 – Present"
+                  />
+                </div>
+                <textarea
+                  value={entry.description}
+                  onChange={(e) => {
+                    const employment = [...data.home.employment];
+                    employment[index] = { ...employment[index], description: e.target.value };
+                    updateHome({ employment });
+                  }}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  rows={2}
+                  placeholder="Institution and department"
+                />
+                <button
+                  type="button"
+                  className={adminBtnDangerOutline}
+                  onClick={() =>
+                    updateHome({
+                      employment: data.home.employment.filter((item) => item.id !== entry.id),
+                    })
+                  }
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3 border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-800">Education</h4>
+              <button
+                type="button"
+                className={adminBtnOutline}
+                onClick={() =>
+                  updateHome({
+                    education: [
+                      ...data.home.education,
+                      {
+                        id: newId(),
+                        degree: "",
+                        period: "",
+                        details: "",
+                        thesisUrl: "",
+                        sortOrder: data.home.education.length,
+                      },
+                    ],
+                  })
+                }
+              >
+                Add entry
+              </button>
+            </div>
+            {data.home.education.map((entry, index) => (
+              <div key={entry.id} className="space-y-2 rounded-md border border-slate-200 p-3">
+                <div className="grid gap-2 md:grid-cols-2">
+                  <input
+                    value={entry.degree}
+                    onChange={(e) => {
+                      const education = [...data.home.education];
+                      education[index] = { ...education[index], degree: e.target.value };
+                      updateHome({ education });
+                    }}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="Ph.D."
+                  />
+                  <input
+                    value={entry.period}
+                    onChange={(e) => {
+                      const education = [...data.home.education];
+                      education[index] = { ...education[index], period: e.target.value };
+                      updateHome({ education });
+                    }}
+                    className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="June 2012 – August 2018"
+                  />
+                </div>
+                <textarea
+                  value={entry.details}
+                  onChange={(e) => {
+                    const education = [...data.home.education];
+                    education[index] = { ...education[index], details: e.target.value };
+                    updateHome({ education });
+                  }}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  rows={2}
+                  placeholder="Field and department"
+                />
+                <input
+                  value={entry.thesisUrl}
+                  onChange={(e) => {
+                    const education = [...data.home.education];
+                    education[index] = { ...education[index], thesisUrl: e.target.value };
+                    updateHome({ education });
+                  }}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  placeholder="Thesis URL (optional)"
+                />
+                <button
+                  type="button"
+                  className={adminBtnDangerOutline}
+                  onClick={() =>
+                    updateHome({
+                      education: data.home.education.filter((item) => item.id !== entry.id),
+                    })
+                  }
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900">Branding & hero</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -182,14 +582,18 @@ export function WebsiteDataManagement() {
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900">Lead person</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Lead person (home profile)</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <input value={data.lead.name} onChange={(e) => update("lead", { name: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Name" required />
-          <input value={data.lead.role} onChange={(e) => update("lead", { role: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Role" required />
-          <input value={data.lead.scholarUrl} onChange={(e) => update("lead", { scholarUrl: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Scholar URL" required />
+          <input value={data.lead.role} onChange={(e) => update("lead", { role: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Role / affiliation" required />
+          <input value={data.lead.location} onChange={(e) => update("lead", { location: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Location (e.g. Varanasi, India)" />
+          <input value={data.lead.phone} onChange={(e) => update("lead", { phone: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Phone" />
+          <input value={data.lead.cvUrl} onChange={(e) => update("lead", { cvUrl: e.target.value })} className="md:col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="CV download URL" />
+          <input value={data.lead.scholarUrl} onChange={(e) => update("lead", { scholarUrl: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Google Scholar URL" required />
           <input value={data.lead.researchGateUrl} onChange={(e) => update("lead", { researchGateUrl: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="ResearchGate URL" required />
-          <textarea value={data.lead.bio} onChange={(e) => update("lead", { bio: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2" rows={10} placeholder="Lead bio" required />
+          <textarea value={data.lead.bio} onChange={(e) => update("lead", { bio: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2" rows={10} placeholder="Full bio (used on About page)" required />
           <div className="md:col-span-2 space-y-2">
+            <label className="block text-xs font-medium text-slate-600">Profile photo (home page)</label>
             <input type="file" accept="image/*" onChange={(e) => setLeadImage(e.target.files?.[0] ?? null)} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
             <PreviewImage mimeType={data.lead.imageMimeType} base64={data.lead.imageBase64} alt="Lead image" />
           </div>

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth-guard";
-import { connectToDb } from "@/lib/db";
+import { dbQuery } from "@/lib/db";
 import { WebsiteData } from "@/lib/models/WebsiteData";
-import { defaultWebsiteData, getPublicWebsiteData } from "@/lib/website-data";
+import {
+  getPublicWebsiteData,
+  websiteDataMongooseDefaults,
+} from "@/lib/website-data";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -24,6 +27,22 @@ async function readImageFile(value: FormDataEntryValue | null) {
     mimeType: value.type,
     data: Buffer.from(await value.arrayBuffer()),
   };
+}
+
+function parseJsonArray<T>(value: FormDataEntryValue | null): T[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(String(value)) as T[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function clampLimit(value: FormDataEntryValue | null, fallback: number) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(20, Math.max(1, Math.round(n)));
 }
 
 export async function GET() {
@@ -57,9 +76,19 @@ export async function PATCH(request: NextRequest) {
     const lead = {
       name: String(formData.get("lead.name") ?? "").trim(),
       role: String(formData.get("lead.role") ?? "").trim(),
+      location: String(formData.get("lead.location") ?? "").trim(),
+      phone: String(formData.get("lead.phone") ?? "").trim(),
+      cvUrl: String(formData.get("lead.cvUrl") ?? "").trim(),
       bio: String(formData.get("lead.bio") ?? "").trim(),
       scholarUrl: String(formData.get("lead.scholarUrl") ?? "").trim(),
       researchGateUrl: String(formData.get("lead.researchGateUrl") ?? "").trim(),
+    };
+    const home = {
+      aboutSummary: String(formData.get("home.aboutSummary") ?? "").trim(),
+      highlightsText: String(formData.get("home.highlightsText") ?? "").trim(),
+      researchInterestsText: String(formData.get("home.researchInterestsText") ?? "").trim(),
+      recentProjectsLimit: clampLimit(formData.get("home.recentProjectsLimit"), 5),
+      recentPublicationsLimit: clampLimit(formData.get("home.recentPublicationsLimit"), 5),
     };
     const contact = {
       addressLine: String(formData.get("contact.addressLine") ?? "").trim(),
@@ -70,6 +99,25 @@ export async function PATCH(request: NextRequest) {
       linkedInLabel: String(formData.get("contact.linkedInLabel") ?? "").trim(),
       mapEmbedUrl: String(formData.get("contact.mapEmbedUrl") ?? "").trim(),
     };
+
+    const profileLinks = parseJsonArray<{
+      label?: string;
+      url?: string;
+      sortOrder?: number;
+    }>(formData.get("home.profileLinks"));
+    const employment = parseJsonArray<{
+      title?: string;
+      period?: string;
+      description?: string;
+      sortOrder?: number;
+    }>(formData.get("home.employment"));
+    const education = parseJsonArray<{
+      degree?: string;
+      period?: string;
+      details?: string;
+      thesisUrl?: string;
+      sortOrder?: number;
+    }>(formData.get("home.education"));
 
     if (
       !branding.labName ||
@@ -87,6 +135,7 @@ export async function PATCH(request: NextRequest) {
       !lead.bio ||
       !lead.scholarUrl ||
       !lead.researchGateUrl ||
+      !home.aboutSummary ||
       !contact.addressLine ||
       !contact.email ||
       !contact.webUrl ||
@@ -95,15 +144,15 @@ export async function PATCH(request: NextRequest) {
       !contact.linkedInLabel ||
       !contact.mapEmbedUrl
     ) {
-      return NextResponse.json({ error: "All website data fields are required." }, { status: 400 });
+      return NextResponse.json({ error: "All required website data fields must be filled." }, { status: 400 });
     }
 
     const brandingIcon = await readImageFile(formData.get("branding.icon"));
     const aboutImage = await readImageFile(formData.get("about.image"));
     const leadImage = await readImageFile(formData.get("lead.image"));
 
-    await connectToDb();
-    const doc = (await WebsiteData.findOne()) || new WebsiteData(defaultWebsiteData);
+    await dbQuery(async () => {
+    const doc = (await WebsiteData.findOne()) || new WebsiteData(websiteDataMongooseDefaults());
 
     doc.branding.labName = branding.labName;
     doc.branding.shortName = branding.shortName;
@@ -127,6 +176,9 @@ export async function PATCH(request: NextRequest) {
 
     doc.lead.name = lead.name;
     doc.lead.role = lead.role;
+    doc.lead.location = lead.location;
+    doc.lead.phone = lead.phone;
+    doc.lead.cvUrl = lead.cvUrl;
     doc.lead.bio = lead.bio;
     doc.lead.scholarUrl = lead.scholarUrl;
     doc.lead.researchGateUrl = lead.researchGateUrl;
@@ -134,6 +186,39 @@ export async function PATCH(request: NextRequest) {
       doc.lead.imageMimeType = leadImage.mimeType;
       doc.lead.imageData = leadImage.data;
     }
+
+    doc.home.aboutSummary = home.aboutSummary;
+    doc.home.highlightsText = home.highlightsText;
+    doc.home.researchInterestsText = home.researchInterestsText;
+    doc.home.recentProjectsLimit = home.recentProjectsLimit;
+    doc.home.recentPublicationsLimit = home.recentPublicationsLimit;
+
+    doc.home.profileLinks = profileLinks
+      .filter((item) => item.label?.trim() && item.url?.trim())
+      .map((item, index) => ({
+        label: String(item.label).trim(),
+        url: String(item.url).trim(),
+        sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
+      })) as never;
+
+    doc.home.employment = employment
+      .filter((item) => item.title?.trim() && item.period?.trim() && item.description?.trim())
+      .map((item, index) => ({
+        title: String(item.title).trim(),
+        period: String(item.period).trim(),
+        description: String(item.description).trim(),
+        sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
+      })) as never;
+
+    doc.home.education = education
+      .filter((item) => item.degree?.trim() && item.period?.trim() && item.details?.trim())
+      .map((item, index) => ({
+        degree: String(item.degree).trim(),
+        period: String(item.period).trim(),
+        details: String(item.details).trim(),
+        thesisUrl: String(item.thesisUrl ?? "").trim(),
+        sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
+      })) as never;
 
     doc.contact.addressLine = contact.addressLine;
     doc.contact.email = contact.email;
@@ -144,6 +229,7 @@ export async function PATCH(request: NextRequest) {
     doc.contact.mapEmbedUrl = contact.mapEmbedUrl;
 
     await doc.save();
+    });
 
     const websiteData = await getPublicWebsiteData();
     return NextResponse.json({ websiteData });

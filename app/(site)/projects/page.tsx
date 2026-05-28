@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import {
-  ResearchProjectsPageGrid,
+  ResearchProjectsPageContent,
   type ResearchProjectPublic,
 } from "@/app/components/site/ResearchProjectsSection";
 import { connectToDb } from "@/lib/db";
@@ -21,8 +21,6 @@ export default async function ProjectsPage() {
       title: p.title,
       clgName: p.clgName,
       bugged: p.bugged,
-      imageMimeType: p.imageMimeType,
-      imageBase64: p.imageData.toString("base64"),
     }));
   } catch {
     projects = [];
@@ -30,14 +28,8 @@ export default async function ProjectsPage() {
 
   return (
     <div className="bg-white py-14 md:py-20">
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        <h1 className="mx-auto mb-12 w-max text-center text-3xl font-semibold text-[var(--btrust-teal)] md:mb-14 md:text-4xl">
-          <span className="border-b-[3px] border-[var(--btrust-teal)] pb-1">
-            Research Projects
-          </span>
-        </h1>
-
-        <ResearchProjectsPageGrid projects={projects} />
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <ResearchProjectsPageContent projects={projects} />
       </div>
     </div>
   );
