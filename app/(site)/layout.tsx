@@ -3,6 +3,8 @@ import { SiteFooter } from "@/app/components/site/SiteFooter";
 import { SiteHeader } from "@/app/components/site/SiteHeader";
 import { getSiteLayoutData } from "@/lib/website-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   const site = await getSiteLayoutData();
 

@@ -8,6 +8,7 @@ import {
   adminBtnPrimary,
   adminBtnSecondary,
 } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type UserRow = {
   id: string;
@@ -193,7 +194,7 @@ export function UsersManagement() {
                   <td className="px-3 py-2">{u.name}</td>
                   <td className="px-3 py-2">{u.email}</td>
                   <td className="px-3 py-2">{u.isActive ? "Active" : "Inactive"}</td>
-                  <td className="px-3 py-2">{new Date(u.createdAt).toLocaleString()}</td>
+                  <td className="px-3 py-2">{formatAdminDate(u.createdAt)}</td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-2">
                       <button

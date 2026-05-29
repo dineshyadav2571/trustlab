@@ -3,6 +3,7 @@ import { gatherResumeData, resumePdfFilename } from "@/lib/resume/gather-resume-
 import { generateResumePdf } from "@/lib/resume/generate-resume-pdf";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

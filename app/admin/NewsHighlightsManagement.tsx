@@ -9,6 +9,7 @@ import {
   adminBtnPrimary,
   adminBtnSecondary,
 } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type SerializedImage = {
   imageMimeType: string;
@@ -175,7 +176,7 @@ export function NewsHighlightsManagement() {
                 ))}
               </div>
               <p className="mt-2 text-xs text-slate-500">
-                {item.images.length} image(s) · Updated {new Date(item.updatedAt).toLocaleString()}
+                {item.images.length} image(s) · Updated {formatAdminDate(item.updatedAt)}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>

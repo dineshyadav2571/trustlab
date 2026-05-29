@@ -9,6 +9,7 @@ import {
   adminBtnPrimary,
   adminBtnSecondary,
 } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type PeopleItem = {
   id: string;
@@ -228,7 +229,7 @@ export function PeopleManagement() {
                 Research interests: {item.researchInterests}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Updated: {new Date(item.updatedAt).toLocaleString()}
+                Updated: {formatAdminDate(item.updatedAt)}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>

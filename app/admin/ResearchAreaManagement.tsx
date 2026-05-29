@@ -9,6 +9,7 @@ import {
   adminBtnPrimary,
   adminBtnSecondary,
 } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type ResearchArea = {
   id: string;
@@ -185,7 +186,7 @@ export function ResearchAreaManagement() {
                 <h4 className="text-lg font-semibold text-slate-900">{item.title}</h4>
                 <p className="text-sm text-slate-700">{item.description}</p>
                 <p className="text-xs text-slate-500">
-                  Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Updated: {formatAdminDate(item.updatedAt)}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>

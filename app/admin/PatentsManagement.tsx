@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
 import { adminBtnOutline, adminBtnDangerOutline, adminBtnPrimary, adminBtnSecondary } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type PatentCategory = "Granted" | "Published";
 type Patent = {
@@ -152,7 +153,7 @@ export function PatentsManagement() {
               </p>
               <p className="mt-1 text-sm text-slate-800">{item.text}</p>
               <p className="mt-1 text-xs text-slate-500">
-                Updated: {new Date(item.updatedAt).toLocaleString()}
+                Updated: {formatAdminDate(item.updatedAt)}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button

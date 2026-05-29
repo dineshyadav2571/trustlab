@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
 import { adminBtnPrimary, adminBtnSecondary } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type Admin = {
   id: string;
@@ -136,7 +137,7 @@ export function AdminManagement() {
                   <td className="px-3 py-2">{admin.name}</td>
                   <td className="px-3 py-2">{admin.email}</td>
                   <td className="px-3 py-2">{admin.isActive ? "Active" : "Inactive"}</td>
-                  <td className="px-3 py-2">{new Date(admin.createdAt).toLocaleString()}</td>
+                  <td className="px-3 py-2">{formatAdminDate(admin.createdAt)}</td>
                 </tr>
               ))
             ) : (

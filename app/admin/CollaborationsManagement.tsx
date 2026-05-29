@@ -9,6 +9,7 @@ import {
   adminBtnPrimary,
   adminBtnSecondary,
 } from "@/app/admin/admin-styles";
+import { formatAdminDate } from "@/lib/date-format";
 
 type CollaborationItem = {
   id: string;
@@ -169,7 +170,7 @@ export function CollaborationsManagement() {
               <div className="p-4">
                 <p className="whitespace-pre-wrap text-sm text-slate-800">{item.text}</p>
                 <p className="mt-2 text-xs text-slate-500">
-                  Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Updated: {formatAdminDate(item.updatedAt)}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button type="button" onClick={() => startEdit(item)} className={adminBtnOutline}>

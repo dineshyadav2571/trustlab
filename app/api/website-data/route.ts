@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { authenticateRequest } from "@/lib/auth-guard";
 import { dbQuery } from "@/lib/db";
 import { WebsiteData } from "@/lib/models/WebsiteData";
@@ -8,6 +9,7 @@ import {
 } from "@/lib/website-data";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+export const dynamic = "force-dynamic";
 
 function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -230,6 +232,15 @@ export async function PATCH(request: NextRequest) {
 
     await doc.save();
     });
+
+    revalidatePath("/", "layout");
+    revalidatePath("/about");
+    revalidatePath("/projects");
+    revalidatePath("/publications");
+    revalidatePath("/teaching");
+    revalidatePath("/students");
+    revalidatePath("/administration");
+    revalidatePath("/other-activities");
 
     const websiteData = await getPublicWebsiteData();
     return NextResponse.json({ websiteData });
