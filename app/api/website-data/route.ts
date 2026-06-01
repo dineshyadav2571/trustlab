@@ -15,18 +15,34 @@ function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
+};
+
+function resolveImageMime(file: File) {
+  if (file.type.startsWith("image/")) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return EXT_TO_MIME[ext] ?? "";
+}
+
 async function readImageFile(value: FormDataEntryValue | null) {
-  if (!value || !(value instanceof File)) {
+  if (!value || !(value instanceof File) || value.size === 0) {
     return null;
   }
-  if (!value.type.startsWith("image/")) {
-    throw new Error("Only image files are allowed.");
+  const mimeType = resolveImageMime(value);
+  if (!mimeType) {
+    throw new Error("Only image files are allowed (jpg, png, gif, webp, svg).");
   }
   if (value.size > MAX_IMAGE_BYTES) {
     throw new Error("Image is too large (max 8 MB).");
   }
   return {
-    mimeType: value.type,
+    mimeType,
     data: Buffer.from(await value.arrayBuffer()),
   };
 }
@@ -167,6 +183,7 @@ export async function PATCH(request: NextRequest) {
     if (brandingIcon) {
       doc.branding.iconMimeType = brandingIcon.mimeType;
       doc.branding.iconData = brandingIcon.data;
+      doc.markModified("branding");
     }
 
     doc.about.title = about.title;
@@ -174,6 +191,7 @@ export async function PATCH(request: NextRequest) {
     if (aboutImage) {
       doc.about.imageMimeType = aboutImage.mimeType;
       doc.about.imageData = aboutImage.data;
+      doc.markModified("about");
     }
 
     doc.lead.name = lead.name;
@@ -187,6 +205,7 @@ export async function PATCH(request: NextRequest) {
     if (leadImage) {
       doc.lead.imageMimeType = leadImage.mimeType;
       doc.lead.imageData = leadImage.data;
+      doc.markModified("lead");
     }
 
     doc.home.aboutSummary = home.aboutSummary;
@@ -202,6 +221,7 @@ export async function PATCH(request: NextRequest) {
         url: String(item.url).trim(),
         sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
       })) as never;
+    doc.markModified("home.profileLinks");
 
     doc.home.employment = employment
       .filter((item) => item.title?.trim() && item.period?.trim() && item.description?.trim())
@@ -211,6 +231,7 @@ export async function PATCH(request: NextRequest) {
         description: String(item.description).trim(),
         sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
       })) as never;
+    doc.markModified("home.employment");
 
     doc.home.education = education
       .filter((item) => item.degree?.trim() && item.period?.trim() && item.details?.trim())
@@ -221,6 +242,7 @@ export async function PATCH(request: NextRequest) {
         thesisUrl: String(item.thesisUrl ?? "").trim(),
         sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
       })) as never;
+    doc.markModified("home.education");
 
     doc.contact.addressLine = contact.addressLine;
     doc.contact.email = contact.email;
@@ -231,16 +253,33 @@ export async function PATCH(request: NextRequest) {
     doc.contact.mapEmbedUrl = contact.mapEmbedUrl;
 
     await doc.save();
+
+    const imageSet: Record<string, unknown> = {};
+    if (brandingIcon) {
+      imageSet["branding.iconMimeType"] = brandingIcon.mimeType;
+      imageSet["branding.iconData"] = brandingIcon.data;
+    }
+    if (aboutImage) {
+      imageSet["about.imageMimeType"] = aboutImage.mimeType;
+      imageSet["about.imageData"] = aboutImage.data;
+    }
+    if (leadImage) {
+      imageSet["lead.imageMimeType"] = leadImage.mimeType;
+      imageSet["lead.imageData"] = leadImage.data;
+    }
+    if (Object.keys(imageSet).length > 0) {
+      await WebsiteData.updateOne({}, { $set: imageSet });
+    }
     });
 
     revalidatePath("/", "layout");
-    revalidatePath("/about");
     revalidatePath("/projects");
     revalidatePath("/publications");
     revalidatePath("/teaching");
     revalidatePath("/students");
     revalidatePath("/administration");
     revalidatePath("/other-activities");
+    revalidatePath("/important-links");
 
     const websiteData = await getPublicWebsiteData();
     return NextResponse.json({ websiteData });

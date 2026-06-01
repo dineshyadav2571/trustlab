@@ -484,22 +484,6 @@ export function generateResumePdf(data: ResumeData): Promise<Buffer> {
       drawStudents(doc, data.students);
     }
 
-    if (data.patents.length) {
-      sectionHeading(doc, "Patents");
-      for (const group of data.patents) {
-        drawSubheading(doc, group.category);
-        drawSquareBulletList(doc, group.items);
-      }
-    }
-
-    if (data.achievements.length) {
-      sectionHeading(doc, "Achievements & Activities");
-      for (const group of data.achievements) {
-        drawSubheading(doc, group.category);
-        drawSquareBulletList(doc, group.items.slice(0, 12));
-      }
-    }
-
     if (data.administration.length) {
       sectionHeading(doc, "Administration");
       for (const section of data.administration) {

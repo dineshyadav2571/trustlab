@@ -1,10 +1,9 @@
 import { dbQuery } from "@/lib/db";
 import { getPublicAdministrationSections } from "@/lib/administration";
-import { Achievement } from "@/lib/models/Achievement";
-import { Patent } from "@/lib/models/Patent";
 import { Publication, publicationCategories } from "@/lib/models/Publication";
 import { ResearchProject } from "@/lib/models/ResearchProject";
 import { TeachingCourse } from "@/lib/models/TeachingCourse";
+import { getPublicHomeHighlights } from "@/lib/home-highlights";
 import { getPublicSupervisedStudents } from "@/lib/supervised-students";
 import { getPublicWebsiteData } from "@/lib/website-data";
 import type { ResumeData } from "@/lib/resume/types";
@@ -27,6 +26,15 @@ function projectLines(clgName: string, bugged: string) {
 export async function gatherResumeData(): Promise<ResumeData> {
   const website = await getPublicWebsiteData();
   const { lead, contact, home } = website;
+
+  let highlights = home.highlights;
+  try {
+    const slides = await getPublicHomeHighlights();
+    const fromSlides = slides.map((s) => s.alt.trim()).filter(Boolean);
+    if (fromSlides.length) highlights = fromSlides;
+  } catch {
+    // use text highlights from website data
+  }
 
   const profileLinks = home.profileLinks.map((l) => ({ label: l.label, url: l.url }));
   const extraLinks: { label: string; url: string }[] = [];
@@ -69,20 +77,15 @@ export async function gatherResumeData(): Promise<ResumeData> {
   let projects: ResumeData["projects"] = [];
   let publications: ResumeData["publications"] = [];
   let teaching: string[] = [];
-  let patents: ResumeData["patents"] = [];
-  let achievements: ResumeData["achievements"] = [];
 
   try {
-    const [projectDocs, publicationDocs, courseDocs, patentDocs, achievementDocs] =
-      await dbQuery(() =>
-        Promise.all([
-          ResearchProject.find({}).sort({ createdAt: -1 }).limit(MAX_PROJECTS).lean(),
-          Publication.find({}).sort({ createdAt: -1 }).lean(),
-          TeachingCourse.find({}).sort({ createdAt: 1 }).lean(),
-          Patent.find({}).sort({ createdAt: -1 }).lean(),
-          Achievement.find({}).sort({ createdAt: -1 }).lean(),
-        ]),
-      );
+    const [projectDocs, publicationDocs, courseDocs] = await dbQuery(() =>
+      Promise.all([
+        ResearchProject.find({}).sort({ createdAt: -1 }).limit(MAX_PROJECTS).lean(),
+        Publication.find({}).sort({ createdAt: -1 }).lean(),
+        TeachingCourse.find({}).sort({ createdAt: 1 }).lean(),
+      ]),
+    );
 
     projects = projectDocs.map((p) => ({
       title: p.title,
@@ -111,28 +114,6 @@ export async function gatherResumeData(): Promise<ResumeData> {
       .filter((group) => group.items.length > 0);
 
     teaching = courseDocs.map((c) => c.name);
-
-    const patentsByCategory = new Map<string, string[]>();
-    for (const patent of patentDocs) {
-      const list = patentsByCategory.get(patent.category) ?? [];
-      list.push(patent.text);
-      patentsByCategory.set(patent.category, list);
-    }
-    patents = [...patentsByCategory.entries()].map(([category, items]) => ({
-      category,
-      items,
-    }));
-
-    const achievementsByCategory = new Map<string, string[]>();
-    for (const item of achievementDocs) {
-      const list = achievementsByCategory.get(item.category) ?? [];
-      list.push(item.text);
-      achievementsByCategory.set(item.category, list);
-    }
-    achievements = [...achievementsByCategory.entries()].map(([category, items]) => ({
-      category,
-      items,
-    }));
   } catch {
     // partial resume from website data only
   }
@@ -185,7 +166,7 @@ export async function gatherResumeData(): Promise<ResumeData> {
     links: linksForPdf,
     aboutSummary: home.aboutSummary,
     researchInterests: home.researchInterests,
-    highlights: home.highlights,
+    highlights,
     education: home.education.map((e) => ({
       title: e.degree,
       period: e.period,
@@ -202,8 +183,6 @@ export async function gatherResumeData(): Promise<ResumeData> {
     teaching,
     students,
     administration,
-    patents,
-    achievements,
   };
 }
 

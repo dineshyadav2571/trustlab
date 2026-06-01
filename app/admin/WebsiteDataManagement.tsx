@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { AdminImageField } from "@/app/components/admin/AdminImageField";
 import {
   adminBtnPrimary,
   adminBtnSecondary,
@@ -38,12 +38,14 @@ type WebsiteData = {
     footerText: string;
     iconMimeType: string;
     iconBase64: string;
+    iconUrl: string;
   };
   about: {
     title: string;
     body: string;
     imageMimeType: string;
     imageBase64: string;
+    imageUrl: string;
   };
   lead: {
     name: string;
@@ -56,6 +58,7 @@ type WebsiteData = {
     researchGateUrl: string;
     imageMimeType: string;
     imageBase64: string;
+    imageUrl: string;
   };
   home: {
     aboutSummary: string;
@@ -117,20 +120,6 @@ function normalizeFromApi(raw: ApiWebsiteData): WebsiteData {
   };
 }
 
-function PreviewImage({ mimeType, base64, alt }: { mimeType: string; base64: string; alt: string }) {
-  if (!mimeType || !base64) return null;
-  return (
-    <Image
-      src={`data:${mimeType};base64,${base64}`}
-      alt={alt}
-      width={600}
-      height={320}
-      unoptimized
-      className="h-32 w-full rounded-md border border-slate-200 object-cover md:w-auto"
-    />
-  );
-}
-
 export function WebsiteDataManagement() {
   const [data, setData] = useState<WebsiteData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,12 +129,13 @@ export function WebsiteDataManagement() {
   const [brandingIcon, setBrandingIcon] = useState<File | null>(null);
   const [aboutImage, setAboutImage] = useState<File | null>(null);
   const [leadImage, setLeadImage] = useState<File | null>(null);
+  const [imageCacheKey, setImageCacheKey] = useState(0);
 
   async function loadWebsiteData() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/website-data", { cache: "no-store" });
+      const response = await fetch("/api/website-data", { cache: "no-store", credentials: "include" });
       const json = (await response.json()) as { websiteData?: ApiWebsiteData; error?: string };
       if (!response.ok || !json.websiteData) {
         setError(json.error ?? "Could not load website data.");
@@ -242,16 +232,21 @@ export function WebsiteDataManagement() {
       if (aboutImage) formData.append("about.image", aboutImage);
       if (leadImage) formData.append("lead.image", leadImage);
 
-      const response = await fetch("/api/website-data", { method: "PATCH", body: formData });
+      const response = await fetch("/api/website-data", {
+        method: "PATCH",
+        body: formData,
+        credentials: "include",
+      });
       const json = (await response.json()) as { websiteData?: ApiWebsiteData; error?: string };
       if (!response.ok || !json.websiteData) {
-        setError(json.error ?? "Could not save website data.");
+        setError(json.error ?? `Could not save website data (${response.status}).`);
         return;
       }
       setData(normalizeFromApi(json.websiteData));
       setBrandingIcon(null);
       setAboutImage(null);
       setLeadImage(null);
+      setImageCacheKey((k) => k + 1);
       setInfo("Website data updated.");
     } catch {
       setError("Could not save website data.");
@@ -268,7 +263,8 @@ export function WebsiteDataManagement() {
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900">Home page</h3>
         <p className="mt-1 text-sm text-slate-600">
-          Profile card, about summary, highlights, employment, and education shown on the home page.
+          Profile card, about summary, employment, and education on the home page. Highlight
+          carousel images are managed under Admin → Highlights.
           Recent publications and projects are pulled automatically from their admin modules.
         </p>
         <div className="mt-4 grid gap-3">
@@ -280,29 +276,16 @@ export function WebsiteDataManagement() {
             placeholder="Short about paragraph for home page"
             required
           />
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">
-                Highlights (one per line)
-              </label>
-              <textarea
-                value={data.home.highlightsText}
-                onChange={(e) => updateHome({ highlightsText: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                rows={6}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">
-                Research interests (one per line)
-              </label>
-              <textarea
-                value={data.home.researchInterestsText}
-                onChange={(e) => updateHome({ researchInterestsText: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                rows={6}
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">
+              Research interests (one per line)
+            </label>
+            <textarea
+              value={data.home.researchInterestsText}
+              onChange={(e) => updateHome({ researchInterestsText: e.target.value })}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              rows={6}
+            />
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div>
@@ -564,9 +547,21 @@ export function WebsiteDataManagement() {
           <input value={data.branding.heroSubtitle} onChange={(e) => update("branding", { heroSubtitle: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Hero subtitle" required />
           <input value={data.branding.tagline} onChange={(e) => update("branding", { tagline: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Tagline" required />
           <input value={data.branding.footerText} onChange={(e) => update("branding", { footerText: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Footer text" required />
-          <div className="md:col-span-2 space-y-2">
-            <input type="file" accept="image/*" onChange={(e) => setBrandingIcon(e.target.files?.[0] ?? null)} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-            <PreviewImage mimeType={data.branding.iconMimeType} base64={data.branding.iconBase64} alt="Brand icon" />
+          <div className="md:col-span-2">
+            <AdminImageField
+              label="Site icon (header logo)"
+              hint="Shown next to the site name in the navigation bar."
+              variant="icon"
+              currentMimeType={data.branding.iconMimeType}
+              currentBase64={data.branding.iconBase64}
+              currentUrl={
+                data.branding.iconUrl
+                  ? `${data.branding.iconUrl}?v=${imageCacheKey}`
+                  : ""
+              }
+              pendingFile={brandingIcon}
+              onFileChange={setBrandingIcon}
+            />
           </div>
         </div>
       </section>
@@ -576,8 +571,18 @@ export function WebsiteDataManagement() {
         <div className="mt-4 grid gap-3">
           <input value={data.about.title} onChange={(e) => update("about", { title: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="About title" required />
           <textarea value={data.about.body} onChange={(e) => update("about", { body: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" rows={10} placeholder="About content" required />
-          <input type="file" accept="image/*" onChange={(e) => setAboutImage(e.target.files?.[0] ?? null)} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <PreviewImage mimeType={data.about.imageMimeType} base64={data.about.imageBase64} alt="About image" />
+          <AdminImageField
+            label="About page image"
+            hint="Optional image for the legacy about content block in the database."
+            variant="banner"
+            currentMimeType={data.about.imageMimeType}
+            currentBase64={data.about.imageBase64}
+            currentUrl={
+              data.about.imageUrl ? `${data.about.imageUrl}?v=${imageCacheKey}` : ""
+            }
+            pendingFile={aboutImage}
+            onFileChange={setAboutImage}
+          />
         </div>
       </section>
 
@@ -592,10 +597,19 @@ export function WebsiteDataManagement() {
           <input value={data.lead.scholarUrl} onChange={(e) => update("lead", { scholarUrl: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Google Scholar URL" required />
           <input value={data.lead.researchGateUrl} onChange={(e) => update("lead", { researchGateUrl: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="ResearchGate URL" required />
           <textarea value={data.lead.bio} onChange={(e) => update("lead", { bio: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2" rows={10} placeholder="Full bio (used on About page)" required />
-          <div className="md:col-span-2 space-y-2">
-            <label className="block text-xs font-medium text-slate-600">Profile photo (home page)</label>
-            <input type="file" accept="image/*" onChange={(e) => setLeadImage(e.target.files?.[0] ?? null)} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-            <PreviewImage mimeType={data.lead.imageMimeType} base64={data.lead.imageBase64} alt="Lead image" />
+          <div className="md:col-span-2">
+            <AdminImageField
+              label="Profile photo (home page)"
+              hint="Displayed on the home page profile card and in the downloadable resume PDF."
+              variant="portrait"
+              currentMimeType={data.lead.imageMimeType}
+              currentBase64={data.lead.imageBase64}
+              currentUrl={
+                data.lead.imageUrl ? `${data.lead.imageUrl}?v=${imageCacheKey}` : ""
+              }
+              pendingFile={leadImage}
+              onFileChange={setLeadImage}
+            />
           </div>
         </div>
       </section>

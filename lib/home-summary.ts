@@ -1,4 +1,5 @@
 import { dbQuery } from "@/lib/db";
+import { getPublicHomeHighlights, type HomeHighlightPublic } from "@/lib/home-highlights";
 import { Publication } from "@/lib/models/Publication";
 import { ResearchProject } from "@/lib/models/ResearchProject";
 import { getPublicWebsiteData, type PublicWebsiteData } from "@/lib/website-data";
@@ -18,6 +19,7 @@ export type HomeProjectSummary = {
 
 export type HomePageData = {
   website: PublicWebsiteData;
+  highlightSlides: HomeHighlightPublic[];
   recentPublications: HomePublicationSummary[];
   recentProjects: HomeProjectSummary[];
 };
@@ -25,8 +27,15 @@ export type HomePageData = {
 export async function getHomePageData(): Promise<HomePageData> {
   const website = await getPublicWebsiteData();
 
+  let highlightSlides: HomeHighlightPublic[] = [];
   let recentPublications: HomePublicationSummary[] = [];
   let recentProjects: HomeProjectSummary[] = [];
+
+  try {
+    highlightSlides = await getPublicHomeHighlights();
+  } catch {
+    highlightSlides = [];
+  }
 
   try {
     const pubLimit = website.home.recentPublicationsLimit || 5;
@@ -56,5 +65,5 @@ export async function getHomePageData(): Promise<HomePageData> {
     recentProjects = [];
   }
 
-  return { website, recentPublications, recentProjects };
+  return { website, highlightSlides, recentPublications, recentProjects };
 }

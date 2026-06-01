@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AdminFormModal } from "@/app/components/admin/AdminFormModal";
+import { AdminImageField } from "@/app/components/admin/AdminImageField";
 import {
   adminBtnDangerOutline,
   adminBtnOutline,
@@ -32,6 +33,7 @@ export function ResearchProjectsManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<ResearchProjectItem | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -64,6 +66,7 @@ export function ResearchProjectsManagement() {
 
   function resetForm() {
     setEditingId(null);
+    setEditingItem(null);
     setForm(emptyForm);
     setImageFile(null);
     setFormModalOpen(false);
@@ -71,6 +74,7 @@ export function ResearchProjectsManagement() {
 
   function openCreateModal() {
     setEditingId(null);
+    setEditingItem(null);
     setForm(emptyForm);
     setImageFile(null);
     setError("");
@@ -79,6 +83,7 @@ export function ResearchProjectsManagement() {
 
   function startEdit(item: ResearchProjectItem) {
     setEditingId(item.id);
+    setEditingItem(item);
     setForm({
       title: item.title,
       clgName: item.clgName,
@@ -240,12 +245,15 @@ export function ResearchProjectsManagement() {
             placeholder="Supporting text"
             className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
-          <input
-            type="file"
-            accept="image/*"
+          <AdminImageField
+            label="Project image"
+            hint="Shown on the public Projects page."
+            variant="banner"
+            currentMimeType={editingItem?.imageMimeType}
+            currentBase64={editingItem?.imageBase64}
+            pendingFile={imageFile}
+            onFileChange={setImageFile}
             required={!editingId}
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
 
           {error ? (

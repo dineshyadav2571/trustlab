@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { DownloadResumeButton } from "@/app/components/site/home/DownloadResumeButton";
+import { HighlightsCarousel } from "@/app/components/site/home/HighlightsCarousel";
 import type { HomePageData } from "@/lib/home-summary";
 import type { PublicWebsiteData } from "@/lib/website-data";
 
@@ -43,7 +44,11 @@ function ProjectMetaLine({ text }: { text: string }) {
 
 function HomeProfileCard({ website }: { website: PublicWebsiteData }) {
   const { lead, contact, home } = website;
-  const hasImage = lead.imageMimeType && lead.imageBase64;
+  const hasImage =
+    Boolean(lead.imageUrl) || (Boolean(lead.imageMimeType) && Boolean(lead.imageBase64));
+  const leadImageSrc = lead.imageBase64
+    ? `data:${lead.imageMimeType};base64,${lead.imageBase64}`
+    : lead.imageUrl;
   const links = [
     ...home.profileLinks,
     ...(lead.scholarUrl
@@ -114,9 +119,9 @@ function HomeProfileCard({ website }: { website: PublicWebsiteData }) {
           </div>
         </div>
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-          {hasImage ? (
+          {hasImage && leadImageSrc ? (
             <Image
-              src={`data:${lead.imageMimeType};base64,${lead.imageBase64}`}
+              src={leadImageSrc}
               alt={lead.name}
               width={600}
               height={720}
@@ -172,7 +177,7 @@ function TimelineList({
 }
 
 export function HomePageSections({ data }: { data: HomePageData }) {
-  const { website, recentProjects, recentPublications } = data;
+  const { website, highlightSlides, recentProjects, recentPublications } = data;
   const { home } = website;
 
   return (
@@ -181,38 +186,23 @@ export function HomePageSections({ data }: { data: HomePageData }) {
 
       <HomeCard title="About">
         <p className="text-sm leading-relaxed text-slate-800 md:text-[15px]">{home.aboutSummary}</p>
-        <p className="mt-4">
-          <Link href="/about" className="text-sm font-medium text-[var(--btrust-teal)] underline">
-            Read full about page
-          </Link>
-        </p>
       </HomeCard>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <HomeCard title="Highlights">
-          {home.highlights.length === 0 ? (
-            <p className="text-sm text-slate-500">Add highlights in Website Data.</p>
-          ) : (
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-800 md:text-[15px]">
-              {home.highlights.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          )}
-        </HomeCard>
+      <HomeCard title="Highlights">
+        <HighlightsCarousel slides={highlightSlides} />
+      </HomeCard>
 
-        <HomeCard title="Research Interests">
-          {home.researchInterests.length === 0 ? (
-            <p className="text-sm text-slate-500">Add research interests in Website Data.</p>
-          ) : (
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-800 md:text-[15px]">
-              {home.researchInterests.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          )}
-        </HomeCard>
-      </div>
+      <HomeCard title="Research Interests">
+        {home.researchInterests.length === 0 ? (
+          <p className="text-sm text-slate-500">Add research interests in Website Data.</p>
+        ) : (
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-800 md:text-[15px]">
+            {home.researchInterests.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+      </HomeCard>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <HomeCard title="Employment History">

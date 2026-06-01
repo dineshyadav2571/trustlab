@@ -1,5 +1,10 @@
 import { dbQuery } from "@/lib/db";
+import { toImageBuffer } from "@/lib/image-buffer";
 import { WebsiteData } from "@/lib/models/WebsiteData";
+
+export function websiteDataImageUrl(slot: "lead" | "branding" | "about") {
+  return `/api/website-data/images/${slot}`;
+}
 
 export type ProfileLinkPublic = {
   id: string;
@@ -37,12 +42,14 @@ export type PublicWebsiteData = {
     footerText: string;
     iconMimeType: string;
     iconBase64: string;
+    iconUrl: string;
   };
   about: {
     title: string;
     body: string;
     imageMimeType: string;
     imageBase64: string;
+    imageUrl: string;
   };
   lead: {
     name: string;
@@ -55,6 +62,7 @@ export type PublicWebsiteData = {
     researchGateUrl: string;
     imageMimeType: string;
     imageBase64: string;
+    imageUrl: string;
   };
   home: {
     aboutSummary: string;
@@ -165,13 +173,14 @@ export const defaultWebsiteData: PublicWebsiteData = {
     shortName: "YOUR LAB",
     siteTitle: "Your Lab Name | Research and Innovation",
     siteDescription:
-      "A research lab website for innovation, publications, projects, people, and collaborations.",
+      "Faculty profile site for publications, projects, teaching, students, and administration.",
     heroTitle: "Your Lab Name",
-    heroSubtitle: "Research, Innovation, and Collaboration",
+    heroSubtitle: "Research, teaching, and academic profile",
     tagline: "Building ideas into impact",
     footerText: "All rights reserved.",
     iconMimeType: "",
     iconBase64: "",
+    iconUrl: "",
   },
   about: {
     title: "About Us",
@@ -179,6 +188,7 @@ export const defaultWebsiteData: PublicWebsiteData = {
       "This section introduces your lab, its mission, and the broad problems it aims to solve.\n\nUse this space to describe the vision of the lab, the major research themes, and the real-world impact of your work.",
     imageMimeType: "",
     imageBase64: "",
+    imageUrl: "",
   },
   lead: {
     name: "Dr. Lead Name",
@@ -192,6 +202,7 @@ export const defaultWebsiteData: PublicWebsiteData = {
     researchGateUrl: "https://www.researchgate.net/",
     imageMimeType: "",
     imageBase64: "",
+    imageUrl: "",
   },
   home: {
     aboutSummary:
@@ -291,12 +302,16 @@ function serialize(doc: WebsiteDataRecord): PublicWebsiteData {
       footerText: doc.branding.footerText,
       iconMimeType: doc.branding.iconMimeType || "",
       iconBase64: bufferToBase64(doc.branding.iconData),
+      iconUrl: toImageBuffer(doc.branding.iconData).length
+        ? websiteDataImageUrl("branding")
+        : "",
     },
     about: {
       title: doc.about.title,
       body: doc.about.body,
       imageMimeType: doc.about.imageMimeType || "",
       imageBase64: bufferToBase64(doc.about.imageData),
+      imageUrl: toImageBuffer(doc.about.imageData).length ? websiteDataImageUrl("about") : "",
     },
     lead: {
       name: doc.lead.name,
@@ -309,6 +324,7 @@ function serialize(doc: WebsiteDataRecord): PublicWebsiteData {
       researchGateUrl: doc.lead.researchGateUrl,
       imageMimeType: doc.lead.imageMimeType || "",
       imageBase64: bufferToBase64(doc.lead.imageData),
+      imageUrl: toImageBuffer(doc.lead.imageData).length ? websiteDataImageUrl("lead") : "",
     },
     home: {
       aboutSummary: homeDoc?.aboutSummary ?? homeDefaults.aboutSummary,
@@ -379,8 +395,7 @@ export function websiteDataMongooseDefaults() {
 
 export type SiteLayoutData = {
   branding: {
-    shortName: string;
-    tagline: string;
+    headerName: string;
     iconMimeType: string;
     iconBase64: string;
   };
@@ -435,8 +450,7 @@ export async function getSiteLayoutData(): Promise<SiteLayoutData> {
       if (!doc) {
         return {
           branding: {
-            shortName: fallback.shortName,
-            tagline: fallback.tagline,
+            headerName: fallback.labName,
             iconMimeType: fallback.iconMimeType,
             iconBase64: fallback.iconBase64,
           },
@@ -446,8 +460,7 @@ export async function getSiteLayoutData(): Promise<SiteLayoutData> {
       }
       return {
         branding: {
-          shortName: doc.branding.shortName,
-          tagline: doc.branding.tagline,
+          headerName: doc.branding.labName,
           iconMimeType: doc.branding.iconMimeType || "",
           iconBase64: bufferToBase64(doc.branding.iconData),
         },
@@ -458,8 +471,7 @@ export async function getSiteLayoutData(): Promise<SiteLayoutData> {
   } catch {
     return {
       branding: {
-        shortName: fallback.shortName,
-        tagline: fallback.tagline,
+        headerName: fallback.labName,
         iconMimeType: fallback.iconMimeType,
         iconBase64: fallback.iconBase64,
       },

@@ -62,6 +62,4 @@ export type ResumeData = {
   teaching: string[];
   students: ResumeStudentGroup[];
   administration: ResumeAdminSection[];
-  patents: { category: string; items: string[] }[];
-  achievements: { category: string; items: string[] }[];
 };
