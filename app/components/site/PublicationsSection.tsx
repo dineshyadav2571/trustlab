@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 
 /** Mirrors `PublicationCategory` in `lib/models/Publication` (kept local to avoid bundling mongoose on the client). */
-export type SitePublicationCategory = "Journals" | "Conference" | "Books";
+export type SitePublicationCategory = "Journals" | "Conference" | "Books" | "Book Chapters";
 
 export type PublicationPublic = {
   id: string;
@@ -18,6 +18,7 @@ const TABS: { category: SitePublicationCategory; label: string }[] = [
   { category: "Journals", label: "Journals" },
   { category: "Conference", label: "Conferences" },
   { category: "Books", label: "Books" },
+  { category: "Book Chapters", label: "Book Chapters" },
 ];
 
 function escapeRegExp(s: string) {
@@ -45,7 +46,7 @@ export function PublicationsSection({ publications }: { publications: Publicatio
 
   return (
     <>
-      <div className="mb-10 grid w-full grid-cols-3 overflow-hidden rounded-lg border border-slate-200 shadow-sm md:mb-12">
+      <div className="mb-10 grid w-full grid-cols-2 overflow-hidden rounded-lg border border-slate-200 shadow-sm sm:grid-cols-4 md:mb-12">
         {TABS.map((tab) => {
           const isActive = active === tab.category;
           return (

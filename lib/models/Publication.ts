@@ -1,6 +1,11 @@
 import { Model, Schema, model, models } from "mongoose";
 
-export const publicationCategories = ["Journals", "Conference", "Books"] as const;
+export const publicationCategories = [
+  "Journals",
+  "Conference",
+  "Books",
+  "Book Chapters",
+] as const;
 export type PublicationCategory = (typeof publicationCategories)[number];
 
 export interface PublicationDocument {

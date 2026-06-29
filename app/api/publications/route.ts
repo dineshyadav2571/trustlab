@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   if (!isPublicationCategory(category)) {
     return NextResponse.json(
-      { error: "category must be one of Journals, Conference, Books." },
+      { error: `category must be one of ${publicationCategories.join(", ")}.` },
       { status: 400 },
     );
   }
