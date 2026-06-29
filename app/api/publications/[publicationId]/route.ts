@@ -87,7 +87,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const nextCategory = body.category.trim();
     if (!isPublicationCategory(nextCategory)) {
       return NextResponse.json(
-        { error: "category must be one of Journals, Conference, Books." },
+        { error: `category must be one of ${publicationCategories.join(", ")}.` },
         { status: 400 },
       );
     }

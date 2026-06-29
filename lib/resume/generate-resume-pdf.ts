@@ -32,6 +32,7 @@ const PUBLICATION_CATEGORY_LABELS: Record<string, string> = {
   Journals: "Journal Articles",
   Conference: "Conference Proceedings",
   Books: "Books",
+  "Book Chapters": "Book Chapters",
 };
 
 type PdfDoc = InstanceType<typeof PDFDocument>;

@@ -10,7 +10,7 @@ import {
 } from "@/app/admin/admin-styles";
 import { formatAdminDate } from "@/lib/date-format";
 
-type PublicationCategory = "Journals" | "Conference" | "Books";
+type PublicationCategory = "Journals" | "Conference" | "Books" | "Book Chapters";
 type Publication = {
   id: string;
   category: PublicationCategory;
@@ -19,7 +19,12 @@ type Publication = {
   updatedAt: string;
 };
 
-const categories: PublicationCategory[] = ["Journals", "Conference", "Books"];
+const categories: PublicationCategory[] = [
+  "Journals",
+  "Conference",
+  "Books",
+  "Book Chapters",
+];
 
 const defaultForm = {
   category: "Journals" as PublicationCategory,

@@ -8,7 +8,7 @@ import { Publication } from "@/lib/models/Publication";
 
 export const metadata: Metadata = {
   title: "Publications",
-  description: "Journal articles, conference papers, and books.",
+  description: "Journal articles, conference papers, books, and book chapters.",
 };
 
 export default async function PublicationsPage() {
